@@ -169,7 +169,9 @@ const App: React.FC = () => {
       return;
     }
     const client: Client = { ...newClient, id: crypto.randomUUID(), userId: user.id, createdAt: new Date().toISOString() };
-    setClients(prev => [client, ...prev]);
+    const newClientsList = [client, ...clients];
+    setClients(newClientsList);
+    localStorage.setItem(CACHE_KEY_CLIENTS, JSON.stringify(newClientsList));
     await db.saveClient(client);
   };
 
@@ -181,14 +183,28 @@ const App: React.FC = () => {
   };
 
   const handleUpdateClient = async (id: string, updatedData: Partial<Client>) => {
-    setClients(prev => prev.map(c => c.id === id ? { ...c, ...updatedData } : c));
-    const client = clients.find(c => c.id === id);
-    if (client) await db.saveClient({ ...client, ...updatedData });
+    // 1. Atualização Otimista da UI e Cache Local
+    const updatedClients = clients.map(c => c.id === id ? { ...c, ...updatedData } : c);
+    setClients(updatedClients);
+    localStorage.setItem(CACHE_KEY_CLIENTS, JSON.stringify(updatedClients));
+    
+    // 2. Persistência no Banco de Dados
+    // Usamos 'updatedClients' para garantir que pegamos o objeto JÁ fundido com os novos dados
+    const clientToSave = updatedClients.find(c => c.id === id);
+    if (clientToSave) {
+        const { error } = await db.saveClient(clientToSave);
+        if (error) {
+           console.error("Erro ao salvar no banco:", error);
+           // Em caso de erro crítico, poderíamos reverter, mas o log já ajuda no debug.
+        }
+    }
   };
 
   const handleDeleteClient = async (id: string) => {
     if (confirm('Deseja realmente excluir este cliente?')) {
-      setClients(prev => prev.filter(c => c.id !== id));
+      const filtered = clients.filter(c => c.id !== id);
+      setClients(filtered);
+      localStorage.setItem(CACHE_KEY_CLIENTS, JSON.stringify(filtered));
       await db.deleteClient(id);
     }
   };
