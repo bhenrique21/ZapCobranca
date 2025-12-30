@@ -94,6 +94,14 @@ const App: React.FC = () => {
     }
   }, [user, pollPaymentStatus]);
 
+  // Função auxiliar para verificar se a data é do mês corrente
+  const isDateInCurrentMonth = (dateString?: string) => {
+    if (!dateString) return false;
+    const date = new Date(dateString);
+    const now = new Date();
+    return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+  };
+
   const loadUserData = useCallback(async (userId: string, userEmail?: string, userName?: string) => {
     if (!userId) { setIsLoading(false); return; }
     try {
@@ -107,9 +115,25 @@ const App: React.FC = () => {
         db.getClients(userId),
         db.getLogs(userId)
       ]);
-      setClients(clientsData);
+
+      // LÓGICA DE VIRADA DE MÊS (Turnover)
+      // Verifica clientes PAGOS. Se a data de pagamento for de um mês anterior, reseta para PENDENTE.
+      const processedClients = clientsData.map(client => {
+         if (client.status === PaymentStatus.PAID) {
+             // Se não tiver data (legado) OU se a data não for deste mês
+             if (!client.lastPaymentDate || !isDateInCurrentMonth(client.lastPaymentDate)) {
+                 // Dispara atualização silenciosa no banco
+                 db.updateClient(client.id, { status: PaymentStatus.PENDING });
+                 // Retorna o objeto já atualizado para a UI
+                 return { ...client, status: PaymentStatus.PENDING };
+             }
+         }
+         return client;
+      });
+
+      setClients(processedClients);
       setLogs(logsData);
-      localStorage.setItem(CACHE_KEY_CLIENTS, JSON.stringify(clientsData));
+      localStorage.setItem(CACHE_KEY_CLIENTS, JSON.stringify(processedClients));
       setIsLoading(false);
     } catch (err) {
       setIsLoading(false);
@@ -204,6 +228,12 @@ const App: React.FC = () => {
   };
 
   const handleUpdateClient = async (id: string, updatedData: Partial<Client>) => {
+    // REGRA DE OURO: Se o status mudou para PAGO, atualizamos a data de pagamento para AGORA.
+    // Isso garante que o Dashboard saiba EXATAMENTE em que mês o dinheiro entrou.
+    if (updatedData.status === PaymentStatus.PAID) {
+        updatedData.lastPaymentDate = new Date().toISOString();
+    }
+
     // 1. Atualização Otimista da UI e Cache Local
     const updatedClients = clients.map(c => c.id === id ? { ...c, ...updatedData } : c);
     setClients(updatedClients);

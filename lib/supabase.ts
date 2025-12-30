@@ -157,13 +157,14 @@ export const db = {
       status: c.status as PaymentStatus,
       customMessage: c.custom_message || '',
       autoSend: !!c.auto_send,
-      createdAt: c.created_at
+      createdAt: c.created_at,
+      // Mapeamento da nova coluna de data
+      lastPaymentDate: c.last_payment_date
     }));
   },
 
   async saveClient(client: Client) {
     // Usado PRINCIPALMENTE PARA INSERT (Novos Clientes)
-    // Mudamos de upsert para insert para evitar conflitos de permissão de UPDATE em IDs novos
     const payload = {
       id: client.id,
       user_id: client.userId, 
@@ -173,14 +174,15 @@ export const db = {
       due_day: Number(client.dueDay), 
       status: client.status,
       custom_message: client.customMessage || null,
-      auto_send: !!client.autoSend
+      auto_send: !!client.autoSend,
+      // Salvar a data se ela existir
+      last_payment_date: client.lastPaymentDate || null
     };
     return await supabase.from('clients').insert(payload);
   },
 
   async updateClient(clientId: string, updates: Partial<Client>) {
     // Usado PARA ATUALIZAÇÕES PARCIAIS (Editar ou Mudar Status)
-    // Mapeia camelCase para snake_case apenas dos campos que vieram
     const payload: any = {};
     if (updates.name !== undefined) payload.name = updates.name;
     if (updates.whatsapp !== undefined) payload.whatsapp = updates.whatsapp;
@@ -189,8 +191,11 @@ export const db = {
     if (updates.status !== undefined) payload.status = updates.status;
     if (updates.customMessage !== undefined) payload.custom_message = updates.customMessage;
     if (updates.autoSend !== undefined) payload.auto_send = !!updates.autoSend;
+    
+    // Atualiza a data no banco
+    if (updates.lastPaymentDate !== undefined) payload.last_payment_date = updates.lastPaymentDate;
 
-    // Retorna erro se tentar atualizar sem nada, mas evita chamada ao banco
+    // Retorna erro se tentar atualizar sem nada
     if (Object.keys(payload).length === 0) return { error: null };
 
     return await supabase.from('clients').update(payload).eq('id', clientId);
