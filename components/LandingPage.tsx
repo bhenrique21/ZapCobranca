@@ -60,25 +60,24 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
           <div className="absolute top-40 right-10 w-72 h-72 bg-purple-300/20 rounded-full blur-[100px] mix-blend-multiply animate-blob animation-delay-2000"></div>
         </div>
 
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center relative z-10">
-          <div className="text-center lg:text-left flex flex-col items-center lg:items-start">
+        <div className="max-w-5xl mx-auto flex flex-col items-center text-center relative z-10">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-indigo-50 border border-indigo-100 rounded-full mb-8">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-600"></span>
               </span>
-              <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600">O fim da cobrança manual</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600">Gestão Simples e Eficiente</span>
             </div>
             
             <h1 className="text-4xl sm:text-5xl md:text-7xl font-black text-slate-900 leading-[1.05] tracking-tighter mb-6">
-              Cobre no piloto automático e <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">receba 3x mais rápido.</span>
+              Organize suas cobranças e <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">receba em dia.</span>
             </h1>
             
-            <p className="text-lg md:text-xl text-slate-500 font-medium leading-relaxed max-w-2xl mb-10">
-              Pare de perder tempo enviando mensagens chatas. O ZapCobrança notifica seus clientes pelo WhatsApp de forma profissional e elegante.
+            <p className="text-lg md:text-xl text-slate-500 font-medium leading-relaxed max-w-3xl mb-10">
+              Organize seus clientes em um só lugar, aqui você pode solicitar as cobranças de forma prática, rápida e profissional de apenas um lugar.
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto justify-center">
               <button 
                 onClick={onGetStarted}
                 className="w-full sm:w-auto px-8 py-4 bg-indigo-600 text-white font-black rounded-2xl hover:bg-indigo-700 transition-all hover:-translate-y-1 shadow-[0_20px_40px_-15px_rgba(79,70,229,0.4)] flex items-center justify-center gap-2"
@@ -94,80 +93,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
               </button>
             </div>
 
-            <div className="mt-8 flex items-center gap-4 text-xs font-bold text-slate-400">
+            <div className="mt-8 flex items-center justify-center gap-4 text-xs font-bold text-slate-400">
               <span className="flex items-center gap-1"><svg className="w-4 h-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg> Sem cartão de crédito</span>
               <span className="flex items-center gap-1"><svg className="w-4 h-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg> Teste grátis de 7 dias</span>
             </div>
-          </div>
-
-          {/* SIMULADOR DE MENSAGEM (O GRANDE DIFERENCIAL) */}
-          <div className="relative mt-10 lg:mt-0 flex justify-center perspective-1000">
-            {/* Phone Container */}
-            <div className="relative w-[300px] h-[600px] bg-slate-900 rounded-[3rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.3)] border-[8px] border-slate-900 overflow-hidden transform rotate-[-6deg] hover:rotate-0 transition-all duration-700">
-              {/* Notch */}
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-slate-900 rounded-b-2xl z-20"></div>
-              
-              {/* Screen Content */}
-              <div className="w-full h-full bg-[#E5DDD5] relative flex flex-col font-sans">
-                {/* Header WhatsApp */}
-                <div className="bg-[#075E54] p-4 pt-8 text-white flex items-center gap-3 shadow-md z-10">
-                  <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center font-bold text-xs">ZC</div>
-                  <div className="flex-1">
-                    <p className="text-sm font-bold leading-none">Sua Empresa</p>
-                    <p className="text-[10px] opacity-80">online agora</p>
-                  </div>
-                </div>
-
-                {/* Messages */}
-                <div className="flex-1 p-4 space-y-4 overflow-hidden relative">
-                   <div className="absolute inset-0 opacity-5 bg-[url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png')]"></div>
-                   
-                   {/* Mensagem 1 */}
-                   <div className="bg-white p-3 rounded-tr-xl rounded-bl-xl rounded-br-xl shadow-sm text-xs text-slate-800 max-w-[85%] relative z-10 animate-in fade-in slide-in-from-left-4 duration-700 delay-500 fill-mode-forwards opacity-0" style={{animationDelay: '0.5s', animationFillMode: 'forwards'}}>
-                      <p>Olá <strong>Bruno</strong>! Tudo bem?</p>
-                      <span className="text-[9px] text-slate-400 block text-right mt-1">09:41</span>
-                   </div>
-
-                   {/* Mensagem 2 */}
-                   <div className="bg-white p-3 rounded-tr-xl rounded-bl-xl rounded-br-xl shadow-sm text-xs text-slate-800 max-w-[85%] relative z-10 animate-in fade-in slide-in-from-left-4 duration-700 delay-1000 fill-mode-forwards opacity-0" style={{animationDelay: '1.5s', animationFillMode: 'forwards'}}>
-                      <p>Passando para lembrar que sua fatura de <strong>R$ 1.500,00</strong> vence amanhã.</p>
-                      <p className="mt-2 text-indigo-600 font-bold underline cursor-pointer">pix.pagamento.com/bruno</p>
-                      <span className="text-[9px] text-slate-400 block text-right mt-1">09:41</span>
-                   </div>
-
-                   {/* Mensagem 3 (Resposta) */}
-                   <div className="self-end ml-auto bg-[#DCF8C6] p-3 rounded-tl-xl rounded-bl-xl rounded-br-xl shadow-sm text-xs text-slate-800 max-w-[85%] relative z-10 animate-in fade-in slide-in-from-right-4 duration-700 delay-1000 fill-mode-forwards opacity-0" style={{animationDelay: '3s', animationFillMode: 'forwards'}}>
-                      <p>Opa! Obrigado por lembrar. Já vou fazer o pix agora mesmo! 👍</p>
-                      <span className="text-[9px] text-slate-500 block text-right mt-1">09:45</span>
-                   </div>
-                </div>
-
-                {/* Footer Input */}
-                <div className="p-3 bg-white flex items-center gap-2">
-                  <div className="w-full h-8 bg-slate-100 rounded-full"></div>
-                  <div className="w-8 h-8 bg-[#075E54] rounded-full flex items-center justify-center text-white">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" /></svg>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Floating Card - ROI */}
-            <div className="absolute bottom-20 -right-10 md:-right-20 bg-white p-4 rounded-2xl shadow-2xl border border-slate-100 animate-in fade-in zoom-in duration-1000 delay-500 hidden sm:block">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-green-600">
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                </div>
-                <div>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase">Pagamento Recebido</p>
-                  <p className="text-lg font-black text-slate-900">R$ 1.500,00</p>
-                </div>
-              </div>
-              <div className="h-1 w-full bg-slate-100 rounded-full overflow-hidden">
-                <div className="h-full bg-green-500 w-full animate-progress-bar"></div>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -194,10 +123,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
                   <span className="text-xl">📉</span> Esquece quem pagou e quem deve.
                 </li>
                 <li className="flex items-start gap-3 text-slate-600 font-medium">
-                  <span className="text-xl">⏳</span> Perde 5 horas/mês mandando mensagem.
+                  <span className="text-xl">⏳</span> Perde horas copiando e colando mensagens.
                 </li>
                 <li className="flex items-start gap-3 text-slate-600 font-medium">
-                  <span className="text-xl">💸</span> Paga taxas altas de intermediários.
+                  <span className="text-xl">💸</span> Sem previsão de caixa.
                 </li>
               </ul>
             </div>
@@ -208,12 +137,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
               <div className="relative z-10">
                 <div className="flex items-center gap-3 mb-6 text-indigo-600">
                   <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  <h3 className="text-xl font-black text-slate-900">Automático (A Paz)</h3>
+                  <h3 className="text-xl font-black text-slate-900">Organizado (A Paz)</h3>
                 </div>
                 <ul className="space-y-4">
                   <li className="flex items-start gap-3 text-slate-900 font-bold">
                     <span className="w-6 h-6 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 text-xs">✓</span>
-                    Mensagens profissionais e impessoais.
+                    Mensagens profissionais prontas para enviar.
                   </li>
                   <li className="flex items-start gap-3 text-slate-900 font-bold">
                     <span className="w-6 h-6 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 text-xs">✓</span>
@@ -221,7 +150,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
                   </li>
                   <li className="flex items-start gap-3 text-slate-900 font-bold">
                     <span className="w-6 h-6 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 text-xs">✓</span>
-                    100% Automático. Configure e esqueça.
+                    Envio em 1 clique. Sem digitar tudo de novo.
                   </li>
                   <li className="flex items-start gap-3 text-slate-900 font-bold">
                     <span className="w-6 h-6 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 text-xs">✓</span>
@@ -239,7 +168,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
         <div className="max-w-7xl mx-auto text-center mb-16">
           <div className="inline-block px-4 py-1.5 rounded-full bg-slate-100 text-slate-500 font-bold text-xs uppercase tracking-widest mb-4">Visão de Águia</div>
           <h2 className="text-3xl md:text-5xl font-black text-slate-900 mb-6">Controle total, zero planilhas.</h2>
-          <p className="text-slate-500 max-w-2xl mx-auto text-lg">Substitua aquele caderno velho ou a planilha do Excel por um sistema que trabalha por você.</p>
+          <p className="text-slate-500 max-w-2xl mx-auto text-lg">Substitua aquele caderno velho ou a planilha do Excel por um sistema simples e eficiente.</p>
         </div>
 
         <div className="max-w-6xl mx-auto px-2 sm:px-4">
@@ -258,8 +187,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
       {/* --- PRICING --- */}
       <section className="py-24 px-4 bg-slate-50">
         <div className="max-w-7xl mx-auto text-center">
-          <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight mb-6">Investimento que se paga sozinho</h2>
-          <p className="text-slate-500 font-medium mb-16 text-lg">Recupere apenas 1 cliente inadimplente e o sistema já está pago.</p>
+          <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight mb-6 max-w-4xl mx-auto">
+            Conheça nossos planos e escolha o que faz sentido para você agora.
+          </h2>
+          <p className="text-slate-500 font-medium mb-16 text-lg">
+            Sem compra recorrente. Você renova apenas se quiser.
+          </p>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {(Object.keys(PLANS) as Array<keyof typeof PLANS>).map((key) => {
@@ -272,23 +205,21 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
                     <span className="text-4xl font-black text-slate-900">{plan.price}</span>
                     <span className="text-slate-400 font-bold text-sm">/mês</span>
                   </div>
-                  <ul className="space-y-4 w-full flex-1 mb-8">
+                  <ul className="space-y-4 w-full flex-1">
                     <li className="flex items-center gap-3 text-sm text-slate-700 font-bold">
                       <svg className="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                       Até {plan.limit} Clientes
                     </li>
                     <li className="flex items-center gap-3 text-sm text-slate-700 font-bold">
                       <svg className="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                      Automação WhatsApp
+                      Envio via WhatsApp
                     </li>
                     <li className="flex items-center gap-3 text-sm text-slate-700 font-bold">
                       <svg className="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                       Dashboard Completo
                     </li>
                   </ul>
-                  <button onClick={onGetStarted} className={`w-full py-4 rounded-xl font-black transition-all ${plan.recommended ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-xl shadow-indigo-100' : 'bg-slate-100 text-slate-900 hover:bg-slate-200'}`}>
-                    Escolher {plan.name}
-                  </button>
+                  {/* Botão removido para exposição estática */}
                 </div>
               );
             })}
@@ -304,7 +235,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
             {[
               { q: "Preciso baixar algum aplicativo?", a: "Não! O ZapCobrança é 100% online. Você acessa pelo navegador do seu celular ou computador." },
               { q: "Posso usar minha própria chave Pix?", a: "Com certeza. O dinheiro vai direto para a sua conta bancária. Nós não tocamos no seu dinheiro." },
-              { q: "O WhatsApp pode bloquear meu número?", a: "Nós usamos as melhores práticas e APIs oficiais para garantir a segurança do seu número. As mensagens são enviadas de forma espaçada e humanizada." },
+              { q: "O WhatsApp pode bloquear meu número?", a: "Nós usamos a API oficial do WhatsApp, o que garante maior segurança no envio das mensagens de cobrança." },
               { q: "Tem fidelidade?", a: "Nenhuma. Você pode cancelar a qualquer momento sem multa." }
             ].map((item, i) => (
               <div key={i} className="border border-slate-200 rounded-2xl overflow-hidden">
@@ -331,8 +262,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
         <div className="max-w-4xl mx-auto bg-indigo-600 rounded-[3rem] p-12 md:p-20 text-white shadow-2xl shadow-indigo-300 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
           <div className="relative z-10">
-            <h2 className="text-3xl md:text-5xl font-black mb-6 tracking-tight">Pronto para profissionalizar?</h2>
-            <p className="text-indigo-100 text-lg md:text-xl max-w-2xl mx-auto mb-10 font-medium">Junte-se a centenas de profissionais que já automatizaram suas finanças.</p>
+            <h2 className="text-3xl md:text-5xl font-black mb-6 tracking-tight">Pronto para organizar sua empresa?</h2>
+            <p className="text-indigo-100 text-lg md:text-xl max-w-2xl mx-auto mb-10 font-medium">Junte-se a centenas de profissionais que já simplificaram suas finanças.</p>
             <button 
               onClick={onGetStarted}
               className="px-10 py-5 bg-white text-indigo-600 text-lg font-black rounded-2xl hover:bg-indigo-50 transition-all hover:scale-105 shadow-xl"

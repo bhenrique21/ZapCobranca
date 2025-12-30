@@ -221,7 +221,7 @@ const Clients: React.FC<ClientsProps> = ({
                         value={client.status}
                         onChange={(e) => onUpdateStatus(client.id, e.target.value as PaymentStatus)}
                         className={`text-[9px] md:text-[10px] font-black py-1.5 px-3 md:px-4 rounded-lg md:rounded-xl border-none cursor-pointer ${
-                          client.status === PaymentStatus.PAID ? 'bg-indigo-50 text-indigo-600' :
+                          client.status === PaymentStatus.PAID ? 'bg-emerald-50 text-emerald-600' :
                           client.status === PaymentStatus.OVERDUE ? 'bg-red-50 text-red-600' :
                           'bg-amber-50 text-amber-600'
                         }`}
