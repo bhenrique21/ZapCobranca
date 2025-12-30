@@ -216,57 +216,6 @@ const App: React.FC = () => {
     }
   };
 
-  if (isLoading && !user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="flex flex-col items-center gap-5">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600 border-t-transparent"></div>
-          <p className="text-slate-400 font-bold text-xs uppercase tracking-widest italic">Sincronizando ZapCobrança...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (isVerifyingPayment) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white p-6 text-center">
-        <div className="max-w-md w-full space-y-10 animate-in fade-in zoom-in duration-500">
-          <div className="relative inline-block">
-            <div className="w-32 h-32 border-[6px] border-slate-50 border-t-indigo-600 rounded-full animate-spin mx-auto"></div>
-            <div className="absolute inset-0 flex items-center justify-center">
-               <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center">
-                  <svg className="w-10 h-10 text-indigo-600 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-               </div>
-            </div>
-          </div>
-          <div className="space-y-4">
-            <h2 className="text-4xl font-black text-slate-900 tracking-tight">Processando Pagamento</h2>
-            <p className="text-slate-500 font-medium leading-relaxed">
-              Recebemos seu pedido! Estamos aguardando a confirmação do Mercado Pago para liberar suas funções.
-            </p>
-          </div>
-          <div className="bg-slate-50 p-6 rounded-[2rem] border border-slate-100 space-y-5">
-            <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
-               <div className="h-full bg-indigo-600 animate-progress"></div>
-            </div>
-            <button 
-              onClick={() => user && checkPaymentOnce(user.id)}
-              disabled={isManualChecking}
-              className="w-full py-4 bg-white border border-slate-200 rounded-2xl text-xs font-black text-slate-600 hover:bg-slate-100 transition-all"
-            >
-              {isManualChecking ? 'Verificando...' : 'Verificar agora'}
-            </button>
-          </div>
-          <button onClick={() => { setIsVerifyingPayment(false); localStorage.removeItem('zapcobranca_pending_plan'); }} className="text-slate-400 text-xs font-bold hover:text-slate-600 underline">
-            Voltar para o sistema
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   const renderView = () => {
     if (activeView === 'LANDING') return <LandingPage onGetStarted={() => setActiveView('AUTH')} onLogin={() => setActiveView('AUTH')} />;
     if (activeView === 'AUTH') return <Auth onLogin={() => {}} />;
@@ -296,8 +245,8 @@ const App: React.FC = () => {
               const plan = PLANS[key];
               const isCurrent = user?.plan.toUpperCase() === key.toUpperCase();
               return (
-                <div key={key} className={`relative p-8 rounded-[2.5rem] border-2 transition-all flex flex-col h-full bg-white ${plan.recommended ? 'border-indigo-600 shadow-xl scale-105 z-10' : 'border-slate-100 shadow-sm'}`}>
-                  {plan.recommended && <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-indigo-600 text-white text-[10px] font-black uppercase px-5 py-2 rounded-full">Mais Vendido</div>}
+                <div key={key} className={`relative p-8 rounded-[2.5rem] border-2 transition-all flex flex-col h-full bg-white ${plan.recommended ? 'border-indigo-600 shadow-xl scale-105 z-10' : 'border-slate-200 hover:border-slate-300 shadow-sm'}`}>
+                  {plan.recommended && <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-indigo-600 text-white text-[10px] font-black uppercase px-5 py-2 rounded-full shadow-lg shadow-indigo-100">Mais Vendido</div>}
                   <h3 className="text-2xl font-black text-slate-800">{plan.name}</h3>
                   <p className="text-4xl font-black text-slate-900 my-6">{plan.price}<span className="text-sm text-slate-400 font-bold">/mês</span></p>
                   <ul className="space-y-4 mb-10 flex-1">

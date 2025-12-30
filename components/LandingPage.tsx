@@ -18,12 +18,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
             <span className="text-lg md:text-xl font-black tracking-tight text-slate-900">ZapCobrança</span>
           </div>
           <div className="flex items-center gap-4 md:gap-8">
-            <button onClick={onLogin} className="text-xs md:text-sm font-bold text-slate-500 hover:text-indigo-600 transition-colors">Entrar</button>
+            <button onClick={onLogin} className="text-sm font-bold text-slate-500 hover:text-indigo-600 transition-colors">Entrar</button>
             <button 
               onClick={onGetStarted}
               className="px-4 py-2 md:px-6 md:py-3 bg-slate-900 text-white text-xs md:text-sm font-black rounded-full hover:bg-slate-800 transition-all active:scale-95 shadow-xl shadow-slate-200"
             >
-              Grátis
+              Começar Grátis
             </button>
           </div>
         </div>
@@ -60,69 +60,49 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
             </button>
           </div>
 
-          {/* UI Mockup - Visual representativo do Dashboard */}
+          {/* Dashboard Preview Image - Atualizada com a captura real do sistema */}
           <div className="mt-16 md:mt-24 w-full max-w-5xl relative animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-500 px-2 sm:px-6">
             <div className="absolute inset-0 bg-indigo-600/10 md:bg-indigo-600/20 blur-[60px] md:blur-[120px] rounded-full -z-10 transform -translate-y-1/2"></div>
-            <div className="bg-slate-900 rounded-[2rem] md:rounded-[3rem] p-2 md:p-4 shadow-2xl border-[4px] md:border-[8px] border-slate-800">
-              <div className="bg-slate-50 rounded-[1.8rem] md:rounded-[2.2rem] overflow-hidden aspect-video md:aspect-[16/9] flex flex-col">
-                <div className="h-10 md:h-16 border-b border-slate-200 bg-white px-4 md:px-8 flex items-center justify-between">
-                  <div className="flex gap-2 md:gap-4">
-                    <div className="w-2 md:w-4 h-2 md:h-4 rounded-full bg-slate-200"></div>
-                    <div className="w-16 md:w-24 h-2 md:h-4 rounded-full bg-slate-100"></div>
-                  </div>
-                  <div className="w-6 md:w-8 h-6 md:h-8 rounded-full bg-slate-200"></div>
-                </div>
-                <div className="p-3 md:p-8 grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
-                  <div className="h-20 md:h-32 bg-white rounded-2xl md:rounded-3xl border border-slate-200 p-3 md:p-6 flex flex-col justify-end">
-                     <div className="w-10 md:w-12 h-2 md:h-3 bg-indigo-100 rounded mb-2"></div>
-                     <div className="w-16 md:w-20 h-4 md:h-6 bg-indigo-600 rounded"></div>
-                  </div>
-                  <div className="h-20 md:h-32 bg-white rounded-2xl md:rounded-3xl border border-slate-200 p-3 md:p-6 flex flex-col justify-end">
-                     <div className="w-10 md:w-12 h-2 md:h-3 bg-emerald-100 rounded mb-2"></div>
-                     <div className="w-16 md:w-20 h-4 md:h-6 bg-emerald-500 rounded"></div>
-                  </div>
-                  <div className="hidden md:flex h-32 bg-white rounded-3xl border border-slate-200 p-6 flex flex-col justify-end">
-                     <div className="w-12 h-3 bg-slate-100 rounded mb-2"></div>
-                     <div className="w-20 h-6 bg-slate-900 rounded"></div>
-                  </div>
-                  <div className="col-span-2 md:col-span-3 h-32 md:h-64 bg-white rounded-2xl md:rounded-[2rem] border border-slate-200 p-4 md:p-8">
-                     <div className="flex justify-between mb-4 md:mb-8">
-                       <div className="w-24 md:w-32 h-4 md:h-6 bg-slate-200 rounded"></div>
-                       <div className="w-12 md:w-20 h-4 md:h-6 bg-slate-100 rounded"></div>
-                     </div>
-                     <div className="space-y-3 md:space-y-4">
-                        {[1,2].map(i => (
-                          <div key={i} className="flex justify-between items-center pb-2 md:pb-4 border-b border-slate-50">
-                            <div className="flex items-center gap-2 md:gap-3">
-                              <div className="w-8 md:w-10 h-8 md:h-10 bg-slate-100 rounded-lg md:rounded-xl"></div>
-                              <div className="w-24 md:w-32 h-3 md:h-4 bg-slate-100 rounded"></div>
-                            </div>
-                            <div className="w-12 md:w-16 h-3 md:h-4 bg-indigo-50 rounded"></div>
-                          </div>
-                        ))}
-                     </div>
-                  </div>
-                </div>
-              </div>
+            <div className="relative group">
+               <div className="absolute -inset-1.5 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-indigo-500/20 rounded-[2.2rem] md:rounded-[3.2rem] opacity-30 group-hover:opacity-50 transition duration-1000 blur-xl"></div>
+               <div className="relative overflow-hidden rounded-[2rem] md:rounded-[3rem] border-8 border-white shadow-2xl">
+                 <img 
+                   src="https://r2.erweima.ai/i/157S76eRToK5E_3l_rX2Zg.png" 
+                   alt="Dashboard ZapCobrança Real"
+                   className="w-full h-auto object-cover transform transition-transform duration-700 group-hover:scale-[1.02]"
+                 />
+               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-12 md:py-20 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 text-center">
-          {[
-            { v: '+10k', l: 'Cobranças' },
-            { v: '98%', l: 'Taxa Receb.' },
-            { v: '2min', l: 'Setup' },
-            { v: '0%', l: 'Taxas Pix' }
-          ].map((stat, i) => (
-            <div key={i}>
-              <p className="text-2xl md:text-4xl font-black text-slate-900">{stat.v}</p>
-              <p className="text-[8px] md:text-xs font-bold text-slate-400 mt-2 uppercase tracking-widest">{stat.l}</p>
-            </div>
-          ))}
+      {/* Trust Message Section (Aesthetic Overhaul) */}
+      <section className="py-24 md:py-32 bg-slate-50 border-y border-slate-100">
+        <div className="max-w-5xl mx-auto px-6 text-center">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-emerald-100/80 rounded-[2rem] text-emerald-600 mb-10 shadow-inner relative">
+            <div className="absolute inset-0 bg-emerald-400/20 blur-xl rounded-full animate-pulse"></div>
+            <svg className="w-10 h-10 relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          
+          <h2 className="text-3xl md:text-5xl font-black text-slate-900 leading-tight mb-8 tracking-tighter">
+            Aqui você não paga taxa de Pix.
+          </h2>
+          
+          <div className="space-y-8">
+            <p className="text-xl md:text-3xl text-slate-600 font-bold leading-tight max-w-4xl mx-auto">
+              O dinheiro cai <span className="text-emerald-500 font-black">direto na sua conta</span>, sem intermediários.<br />
+              Nós não mexemos no seu pagamento!
+            </p>
+            
+            <div className="w-12 h-1 bg-indigo-100 mx-auto rounded-full"></div>
+            
+            <p className="text-xs md:text-sm text-slate-400 font-black uppercase tracking-[0.25em] max-w-2xl mx-auto leading-relaxed opacity-80">
+              Nossa ferramenta apenas organiza seus clientes em um só lugar, de forma simples e prática.
+            </p>
+          </div>
         </div>
       </section>
 
@@ -157,15 +137,15 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
             {(Object.keys(PLANS) as Array<keyof typeof PLANS>).map((key) => {
               const plan = PLANS[key];
               return (
-                <div key={key} className={`relative p-8 md:p-10 rounded-[2rem] md:rounded-[3rem] border-2 transition-all bg-white flex flex-col items-start text-left ${plan.recommended ? 'border-indigo-600 shadow-2xl scale-100 lg:scale-105 z-10' : 'border-slate-100 shadow-sm'}`}>
-                  {plan.recommended && <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-indigo-600 text-white text-[9px] font-black uppercase px-6 py-2 rounded-full whitespace-nowrap">Recomendado</div>}
+                <div key={key} className={`relative p-8 md:p-10 rounded-[2.5rem] border-2 transition-all bg-white flex flex-col items-start text-left ${plan.recommended ? 'border-indigo-600 shadow-2xl scale-100 lg:scale-105 z-10' : 'border-slate-200 hover:border-slate-300 shadow-sm'}`}>
+                  {plan.recommended && <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-indigo-600 text-white text-[9px] font-black uppercase px-6 py-2 rounded-full whitespace-nowrap shadow-lg shadow-indigo-200">Recomendado</div>}
                   <h3 className="text-xl md:text-2xl font-black text-slate-900">{plan.name}</h3>
                   <p className="text-slate-400 text-xs md:text-sm font-medium mt-2 mb-6 leading-relaxed">{plan.description}</p>
                   <div className="mb-6 md:mb-8">
                     <span className="text-3xl md:text-4xl font-black text-slate-900">{plan.price}</span>
                     <span className="text-slate-400 font-bold text-xs md:text-sm">/mês</span>
                   </div>
-                  <ul className="space-y-3 md:space-y-4 mb-8 md:mb-10 w-full flex-1">
+                  <ul className="space-y-3 md:space-y-4 w-full flex-1">
                     {[
                       `${plan.limit} Clientes Ativos`,
                       'Dashboard Financeiro',
@@ -178,12 +158,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
                       </li>
                     ))}
                   </ul>
-                  <button 
-                    onClick={onGetStarted}
-                    className={`w-full py-4 md:py-5 rounded-2xl font-black transition-all active:scale-95 shadow-xl ${plan.recommended ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-100' : 'bg-slate-900 text-white hover:bg-slate-800 shadow-slate-100'}`}
-                  >
-                    Assinar Agora
-                  </button>
                 </div>
               );
             })}
@@ -192,24 +166,14 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
       </section>
 
       {/* Footer */}
-      <footer className="py-16 md:py-20 border-t border-slate-100 text-center px-4">
+      <footer className="py-16 md:py-20 border-t border-slate-100 text-center px-4 bg-white">
         <div className="max-w-7xl mx-auto flex flex-col items-center">
-          <h2 className="text-2xl md:text-3xl font-black mb-6 md:mb-8">Profissionalize suas cobranças hoje.</h2>
-          <button 
-            onClick={onGetStarted}
-            className="w-full sm:w-auto px-10 md:px-12 py-4 md:py-5 bg-indigo-600 text-white font-black rounded-2xl hover:bg-indigo-700 transition-all shadow-2xl shadow-indigo-200"
-          >
-            Começar Grátis
-          </button>
-          <div className="mt-12 md:mt-16 flex flex-col sm:flex-row items-center gap-4 md:gap-8 text-slate-400 text-xs md:text-sm font-bold">
-            <div className="flex items-center gap-2">
-              <div className="w-5 h-5 bg-slate-200 rounded flex items-center justify-center text-slate-400 font-black text-[7px]">Z</div>
-              ZapCobrança © 2024
+          <div className="flex flex-col items-center gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 md:w-9 md:h-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black shadow-lg shadow-indigo-100">Z</div>
+              <span className="text-base md:text-lg font-black text-slate-900">Desenvolvido por ZapCobranças</span>
             </div>
-            <div className="flex gap-4">
-              <a href="#" className="hover:text-slate-600">Termos</a>
-              <a href="#" className="hover:text-slate-600">Privacidade</a>
-            </div>
+            <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">© 2025/2026</p>
           </div>
         </div>
       </footer>
