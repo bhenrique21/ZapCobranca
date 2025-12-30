@@ -4,7 +4,8 @@ import { User, Client, MessageLog, PlanType, PaymentStatus } from '../types';
 import { DEFAULT_TEMPLATE } from '../constants';
 
 export const SUPABASE_URL = 'https://vgvwlmomdwvzoxlflaix.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable__M8OpRuAFQOfZRXTH-UQTg_TfzakYbv';
+// Exportando a chave para ser usada no lib/payments.ts com segurança
+export const SUPABASE_ANON_KEY = 'sb_publishable__M8OpRuAFQOfZRXTH-UQTg_TfzakYbv';
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
@@ -36,7 +37,10 @@ export const db = {
       
       const response = await fetch(`${SUPABASE_URL}/functions/v1/mercado-pago-webhook`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}` 
+        },
         body: JSON.stringify({ action: 'test_config' })
       }).catch(err => {
         console.error("[Diagnostic] Falha de fetch:", err);
@@ -46,7 +50,7 @@ export const db = {
       if (!response) {
         results.details = "Erro de Rede: Não foi possível alcançar a Edge Function. Verifique sua conexão ou se o AdBlock está ligado.";
       } else if (response.status === 404) {
-        results.details = "Erro 404: A função 'mercado-pago-webhook' não foi encontrada no Supabase. Você precisa rodar: 'supabase functions deploy mercado-pago-webhook' no seu terminal.";
+        results.details = "Erro 404: A função 'mercado-pago-webhook' não foi encontrada no Supabase. Você precisa rodar: 'npx supabase functions deploy mercado-pago-webhook --no-verify-jwt' no seu terminal.";
       } else if (response.status === 200) {
         const data = await response.json();
         results.edgeFunction = true;

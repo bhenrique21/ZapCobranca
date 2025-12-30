@@ -1,14 +1,6 @@
 
 import { PlanType } from '../types';
-import { supabase, SUPABASE_URL } from './supabase';
-
-// Helper para obter a anon key definida no lib/supabase.ts
-// Como ela não é exportada diretamente lá, vamos pegá-la da instância do cliente
-// ou usar a string hardcoded se necessário. Para garantir, vamos usar o getter do supabase.
-const getAnonKey = () => {
-  // @ts-ignore - Acessando propriedade interna para garantir envio correto
-  return supabase.supabaseKey || 'sb_publishable__M8OpRuAFQOfZRXTH-UQTg_TfzakYbv';
-};
+import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from './supabase';
 
 export const payments = {
   async createCheckoutSession(plan: PlanType, userEmail: string) {
@@ -16,18 +8,20 @@ export const payments = {
     if (!session?.user) throw new Error("Usuário não autenticado");
 
     const currentOrigin = window.location.origin;
-    console.log('Gerando checkout dinâmico para:', plan, 'com retorno para:', currentOrigin);
+    console.log('Gerando checkout para:', plan, 'com retorno para:', currentOrigin);
 
     const functionUrl = `${SUPABASE_URL}/functions/v1/mercado-pago-webhook`;
-    const anonKey = getAnonKey();
+    
+    // Debug no console para ajudar o usuário a verificar se a URL está correta
+    console.log('Tentando conectar em:', functionUrl);
 
     try {
-      // Usamos fetch direto ao invés de supabase.functions.invoke para evitar problemas de SDK
+      // Usamos fetch direto com a chave importada explicitamente para garantir autenticação correta
       const response = await fetch(functionUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${anonKey}`
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
         },
         body: JSON.stringify({
           action: 'create_preference', 
@@ -39,12 +33,20 @@ export const payments = {
       });
 
       if (!response.ok) {
-        // Se a resposta for 404, significa que a função não existe (não deployada)
+        // Se a resposta for 404, significa que a função não existe
         if (response.status === 404) {
-          throw new Error("ALERTA: A função de pagamento não foi encontrada (404). Verifique se você rodou o comando 'npx supabase functions deploy mercado-pago-webhook --no-verify-jwt' no terminal.");
+          throw new Error("ALERTA: A função de pagamento não foi encontrada (404). Rode: 'npx supabase functions deploy mercado-pago-webhook --no-verify-jwt' no terminal.");
         }
         
-        const errorData = await response.json().catch(() => ({}));
+        // Tenta ler o erro do JSON, se falhar, lê como texto
+        const errorText = await response.text();
+        let errorData;
+        try {
+            errorData = JSON.parse(errorText);
+        } catch (e) {
+            errorData = { error: errorText || `Erro HTTP ${response.status}` };
+        }
+        
         throw new Error(errorData.error || `Erro do servidor: ${response.status}`);
       }
 
@@ -58,21 +60,19 @@ export const payments = {
 
       const checkoutUrl = data.init_point;
       
-      // Tentar abrir em nova aba
       const win = window.open(checkoutUrl, '_blank');
-      
-      // Se bloqueador de popup impedir, redirecionar na mesma aba
       if (!win || win.closed || typeof win.closed === 'undefined') {
         window.location.href = checkoutUrl;
       }
 
       return { success: true };
     } catch (err: any) {
-      console.error('Erro no checkout:', err);
-      // Repassar erro amigável
+      console.error('Erro detalhado no checkout:', err);
+      
       if (err.message.includes('ALERTA')) throw err;
+      
       if (err.message.includes('Failed to fetch')) {
-        throw new Error("Erro de conexão. Verifique se a Edge Function está no ar e se você não tem bloqueadores de anúncio ativos.");
+        throw new Error("Erro de conexão com o servidor de pagamentos. Verifique se a Edge Function foi implantada corretamente e tente novamente.");
       }
       throw err;
     }
