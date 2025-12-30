@@ -54,7 +54,11 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdateUser }) => {
       const result = await onUpdateUser(localUser);
       
       if (result?.error) {
-        setErrorToast("Erro ao salvar: " + result.error);
+        if (result.error.message && result.error.message.includes('column')) {
+            setErrorToast("Erro de Banco de Dados: Tabelas desatualizadas. Rode o script SQL.");
+        } else {
+            setErrorToast("Erro ao salvar: " + (result.error.message || result.error));
+        }
       } else {
         setShowToast(true);
         setTimeout(() => setShowToast(false), 4000);

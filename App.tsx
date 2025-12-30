@@ -182,8 +182,14 @@ const App: React.FC = () => {
     
     if (error) {
         console.error("Erro ao salvar cliente no DB:", error);
-        // Exibe o erro real vindo do banco
-        alert(`Erro ao salvar: ${error.message || 'Falha de conexão'}. Verifique o console.`);
+        
+        // Detecção específica de erro de coluna faltando
+        if (error.message && (error.message.includes("column") || error.message.includes("auto_send"))) {
+             alert("BANCO DE DADOS DESATUALIZADO: A tabela 'clients' precisa ser atualizada. Rode o comando 'ALTER TABLE' fornecido no chat no seu Supabase.");
+        } else {
+             alert(`Erro ao salvar: ${error.message || 'Falha de conexão'}. Verifique o console.`);
+        }
+
         // Reverter estado se falhar
         setClients(previousClients);
         localStorage.setItem(CACHE_KEY_CLIENTS, JSON.stringify(previousClients));
@@ -208,7 +214,9 @@ const App: React.FC = () => {
         const { error } = await db.updateClient(id, updatedData);
         if (error) {
            console.error("Erro ao atualizar no banco:", error);
-           // Opcional: Reverter ou avisar o usuário
+           if (error.message && error.message.includes("column")) {
+              alert("Erro de atualização: Banco de dados desatualizado. Rode o script SQL.");
+           }
         }
     }
   };
