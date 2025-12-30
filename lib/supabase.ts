@@ -162,16 +162,18 @@ export const db = {
   },
 
   async saveClient(client: Client) {
+    // IMPORTANTE: Garantir que números sejam números e strings sejam strings
+    // Isso evita falhas silenciosas no upsert se o dado vier sujo do frontend
     const payload = {
       id: client.id,
       user_id: client.userId, 
       name: client.name,
       whatsapp: client.whatsapp,
-      monthly_value: client.monthlyValue,
-      due_day: client.dueDay,
+      monthly_value: Number(client.monthlyValue), // Força numérico
+      due_day: Number(client.dueDay), // Força numérico
       status: client.status,
-      custom_message: client.customMessage,
-      auto_send: client.autoSend
+      custom_message: client.customMessage || null,
+      auto_send: !!client.autoSend
     };
     return await supabase.from('clients').upsert(payload);
   },
