@@ -8,10 +8,11 @@ export const payments = {
     if (!session?.user) throw new Error("Usuário não autenticado");
 
     const currentOrigin = window.location.origin;
+    // Esta é a URL exata da sua função que processará o pagamento
     const functionUrl = `${SUPABASE_URL}/functions/v1/mercado-pago-webhook`;
 
     try {
-      console.log(`Iniciando checkout: ${plan} em ${functionUrl}`);
+      console.log(`Iniciando checkout: ${plan}`);
 
       const response = await fetch(functionUrl, {
         method: 'POST',
@@ -25,7 +26,8 @@ export const payments = {
           plan: plan.toUpperCase(),
           userId: session.user.id,
           email: userEmail,
-          origin: currentOrigin
+          origin: currentOrigin,
+          webhookUrl: functionUrl // Importante: informa a função qual URL usar para notificações
         })
       });
 
@@ -53,7 +55,6 @@ export const payments = {
       return { success: true };
     } catch (err: any) {
       console.error('Erro Checkout:', err);
-      // Repassa o erro de forma limpa para a UI
       if (err.message.includes('Failed to fetch')) {
         throw new Error("Erro de Conexão: O servidor recusou a conexão. Verifique se o Deploy foi feito ou se você tem bloqueadores de anúncio ativos.");
       }
