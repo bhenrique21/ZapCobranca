@@ -4,8 +4,9 @@ import { User, Client, MessageLog, PlanType, PaymentStatus } from '../types';
 import { DEFAULT_TEMPLATE } from '../constants';
 
 export const SUPABASE_URL = 'https://vgvwlmomdwvzoxlflaix.supabase.co';
-// Exportando a chave para ser usada no lib/payments.ts com segurança
-export const SUPABASE_ANON_KEY = 'sb_publishable__M8OpRuAFQOfZRXTH-UQTg_TfzakYbv';
+
+// Chave ANON/PUBLIC correta fornecida
+export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZndndsbW9tZHd2em94bGZsYWl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwNDkxMDAsImV4cCI6MjA4MjYyNTEwMH0.o3x5j5zxqPDFzMVLayFtJN6wf6waXpnQO5RdYcnPbDY'; 
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
@@ -30,7 +31,13 @@ export const db = {
       // 1. Teste de Banco de Dados
       const { error: dbError } = await supabase.from('profiles').select('id').limit(1);
       results.database = !dbError;
-      if (dbError) console.error("[Diagnostic] Erro no Banco:", dbError);
+      if (dbError) {
+        console.error("[Diagnostic] Erro no Banco:", dbError);
+        if (dbError.message && (dbError.message.includes("JWT") || dbError.message.includes("apikey"))) {
+            results.details = "ERRO DE CHAVE API: Sua SUPABASE_ANON_KEY parece inválida ou expirada.";
+            return results;
+        }
+      }
 
       // 2. Teste de Edge Function (Chamada Direta via Fetch para ignorar bugs de SDK)
       console.log("[Diagnostic] Testando Edge Function em: " + SUPABASE_URL + "/functions/v1/mercado-pago-webhook");
@@ -39,7 +46,8 @@ export const db = {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}` 
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'apikey': SUPABASE_ANON_KEY // Adicionado para garantir compatibilidade
         },
         body: JSON.stringify({ action: 'test_config' })
       }).catch(err => {
@@ -48,16 +56,16 @@ export const db = {
       });
 
       if (!response) {
-        results.details = "Erro de Rede: Não foi possível alcançar a Edge Function. Verifique sua conexão ou se o AdBlock está ligado.";
+        results.details = "Erro de Rede: Não foi possível alcançar a Edge Function. Causas prováveis:\n1. AdBlock ativo (bloqueando 'mercado-pago').\n2. Falha de deploy no Supabase.";
       } else if (response.status === 404) {
-        results.details = "Erro 404: A função 'mercado-pago-webhook' não foi encontrada no Supabase. Você precisa rodar: 'npx supabase functions deploy mercado-pago-webhook --no-verify-jwt' no seu terminal.";
+        results.details = "Erro 404: A função 'mercado-pago-webhook' não foi encontrada. Rode: 'npx supabase functions deploy mercado-pago-webhook --no-verify-jwt'";
       } else if (response.status === 200) {
         const data = await response.json();
         results.edgeFunction = true;
         results.mercadoPago = data?.mp_status === 'OK';
         results.details = data?.details || "Tudo funcionando perfeitamente!";
       } else {
-        results.details = `Erro Inesperado (${response.status}): Verifique os logs no painel do Supabase.`;
+        results.details = `Erro Inesperado (${response.status}): O servidor respondeu, mas com erro.`;
       }
 
       return results;

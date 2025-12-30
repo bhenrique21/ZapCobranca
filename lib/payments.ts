@@ -16,12 +16,14 @@ export const payments = {
     console.log('Tentando conectar em:', functionUrl);
 
     try {
-      // Usamos fetch direto com a chave importada explicitamente para garantir autenticação correta
+      // ADIÇÃO CRÍTICA: O header 'apikey' é frequentemente obrigatório pelo Gateway do Supabase
+      // além do Authorization Bearer. Sem ele, o Gateway pode rejeitar com 401/403 sem CORS.
       const response = await fetch(functionUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'apikey': SUPABASE_ANON_KEY
         },
         body: JSON.stringify({
           action: 'create_preference', 
@@ -72,7 +74,8 @@ export const payments = {
       if (err.message.includes('ALERTA')) throw err;
       
       if (err.message.includes('Failed to fetch')) {
-        throw new Error("Erro de conexão com o servidor de pagamentos. Verifique se a Edge Function foi implantada corretamente e tente novamente.");
+        // Mensagem de erro mais específica e amigável
+        throw new Error("Erro de conexão (Failed to Fetch). Isso geralmente acontece por 3 motivos:\n1. AdBlock bloqueando 'mercado-pago' na URL.\n2. A Edge Function não foi implantada (rode o deploy).\n3. Problema momentâneo de internet.\n\nTente desativar o AdBlock e tente novamente.");
       }
       throw err;
     }

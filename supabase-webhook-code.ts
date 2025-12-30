@@ -16,16 +16,15 @@ const corsHeaders = {
 
 Deno.serve(async (req: Request) => {
   // Handle CORS preflight requests
+  // É CRUCIAL retornar status 204 para OPTIONS
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response(null, { status: 204, headers: corsHeaders });
   }
 
   try {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
     const SERVICE_ROLE_KEY = Deno.env.get("SERVICE_ROLE_KEY") ?? "";
 
-    // Verificação de segurança: Se a chave estiver faltando, logamos mas tentamos continuar
-    // apenas para rotas que não exigem banco de dados (como diagnóstico básico)
     let supabase: any = null;
     if (SUPABASE_URL && SERVICE_ROLE_KEY) {
       try {
