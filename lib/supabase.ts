@@ -39,16 +39,15 @@ export const db = {
         }
       }
 
-      // 2. Teste de Edge Function (Nome alterado para evitar AdBlock)
-      const functionUrl = `${SUPABASE_URL}/functions/v1/api-checkout`;
-      console.log("[Diagnostic] Testando Edge Function em: " + functionUrl);
+      // 2. Teste de Edge Function (Chamada Direta via Fetch para ignorar bugs de SDK)
+      console.log("[Diagnostic] Testando Edge Function em: " + SUPABASE_URL + "/functions/v1/mercado-pago-webhook");
       
-      const response = await fetch(functionUrl, {
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/mercado-pago-webhook`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-          'apikey': SUPABASE_ANON_KEY 
+          'apikey': SUPABASE_ANON_KEY // Adicionado para garantir compatibilidade
         },
         body: JSON.stringify({ action: 'test_config' })
       }).catch(err => {
@@ -57,17 +56,16 @@ export const db = {
       });
 
       if (!response) {
-        results.details = "Erro de Rede: O navegador bloqueou a conexão.\nSolução: Rode o deploy novamente com o novo nome 'api-checkout' para burlar o AdBlock:\n'npx supabase functions deploy api-checkout --no-verify-jwt'";
+        results.details = "Erro de Rede: Não foi possível alcançar a Edge Function. Causas prováveis:\n1. AdBlock ativo (bloqueando 'mercado-pago').\n2. Falha de deploy no Supabase.";
       } else if (response.status === 404) {
-        results.details = "Erro 404: Função não encontrada.\nVocê precisa fazer o deploy com o novo nome:\n'npx supabase functions deploy api-checkout --no-verify-jwt'";
+        results.details = "Erro 404: A função 'mercado-pago-webhook' não foi encontrada. Rode: 'npx supabase functions deploy mercado-pago-webhook --no-verify-jwt'";
       } else if (response.status === 200) {
         const data = await response.json();
         results.edgeFunction = true;
         results.mercadoPago = data?.mp_status === 'OK';
-        results.details = data?.details || "Sistema 100% Operacional!";
+        results.details = data?.details || "Tudo funcionando perfeitamente!";
       } else {
-        const text = await response.text();
-        results.details = `Erro do Servidor (${response.status}): ${text.slice(0, 100)}`;
+        results.details = `Erro Inesperado (${response.status}): O servidor respondeu, mas com erro.`;
       }
 
       return results;
