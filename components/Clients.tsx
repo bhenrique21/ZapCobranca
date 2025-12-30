@@ -108,6 +108,7 @@ const Clients: React.FC<ClientsProps> = ({
       monthlyValue: client.monthlyValue.toString().replace('.', ','),
       dueDay: client.dueDay.toString(),
       customMessage: client.customMessage || currentUser?.messageTemplate || '',
+      // Fix: Use autoSend instead of auto_send to match the Client interface in types.ts
       autoSend: !!client.autoSend
     });
     setIsModalOpen(true);
@@ -128,15 +129,21 @@ const Clients: React.FC<ClientsProps> = ({
       '{{chave_pix}}': currentUser?.pixKey || '',
       '{{link_pagamento}}': currentUser?.paymentLink || ''
     };
+    
     Object.entries(replacements).forEach(([tag, value]) => {
       message = message.replace(new RegExp(tag, 'g'), value);
     });
+
     const encodedMessage = encodeURIComponent(message);
     const cleanPhone = client.whatsapp.replace(/\D/g, '');
-    const finalPhone = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
+    const finalPhone = cleanPhone.startsWith('55') ? cleanPhone : `55${client.whatsapp.replace(/\D/g, '')}`;
     
-    // URL alterada para abrir diretamente no WhatsApp Web
-    const whatsappUrl = `https://web.whatsapp.com/send?phone=${finalPhone}&text=${encodedMessage}`;
+    // Detecção de dispositivo para URL direta
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    // api.whatsapp abre o app no mobile, web.whatsapp abre a conversa direto no PC (se logado)
+    const baseUrl = isMobile ? 'https://api.whatsapp.com/send' : 'https://web.whatsapp.com/send';
+    const whatsappUrl = `${baseUrl}?phone=${finalPhone}&text=${encodedMessage}`;
     
     onSendMessage(client, client.status === PaymentStatus.OVERDUE ? 'COBRANÇA' : 'LEMBRETE');
     window.open(whatsappUrl, '_blank');
