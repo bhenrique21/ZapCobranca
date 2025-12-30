@@ -5,7 +5,7 @@ import { DEFAULT_TEMPLATE } from '../constants';
 
 export const SUPABASE_URL = 'https://vgvwlmomdwvzoxlflaix.supabase.co';
 
-// Chave ANON/PUBLIC correta fornecidaa
+// Chave ANON/PUBLIC correta fornecida
 export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZndndsbW9tZHd2em94bGZsYWl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwNDkxMDAsImV4cCI6MjA4MjYyNTEwMH0.o3x5j5zxqPDFzMVLayFtJN6wf6waXpnQO5RdYcnPbDY'; 
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -83,16 +83,28 @@ export const db = {
   },
 
   async ensureProfile(userId: string, email: string, name: string): Promise<void> {
-    const { data: existing } = await supabase.from('profiles').select('id').eq('id', userId).maybeSingle();
+    // Lógica de Super Admin: Se for o email do admin, força o plano vitalício
+    const isSuperAdmin = email.trim().toLowerCase() === 'admin@admin.com';
+    
+    const { data: existing } = await supabase.from('profiles').select('id, plan').eq('id', userId).maybeSingle();
+    
     if (!existing) {
       await supabase.from('profiles').insert({
         id: userId,
         email: email,
         name: name,
         message_template: DEFAULT_TEMPLATE,
-        plan: 'STARTER',
-        subscription_active: false
+        plan: isSuperAdmin ? 'ADVANCED' : 'STARTER',
+        subscription_active: isSuperAdmin, // Já nasce ativo se for admin
+        subscription_expires_at: isSuperAdmin ? '2099-12-31T23:59:59.999Z' : null // Expira em 2099
       });
+    } else if (isSuperAdmin) {
+      // Se o admin já existe mas por algum motivo não está com o plano correto, atualiza
+      await supabase.from('profiles').update({
+        plan: 'ADVANCED',
+        subscription_active: true,
+        subscription_expires_at: '2099-12-31T23:59:59.999Z'
+      }).eq('id', userId);
     }
   },
 
