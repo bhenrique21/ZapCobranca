@@ -1,7 +1,6 @@
 
 import React, { useMemo, useState } from 'react';
 import { Client, PaymentStatus, MessageLog } from '../types';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 interface DashboardProps {
   clients: Client[];
@@ -27,267 +26,300 @@ const Dashboard: React.FC<DashboardProps> = ({ clients, logs, onQuickAdd }) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
   };
 
-  const getFontSize = (val: number) => {
-    const formatted = formatCurrency(val);
-    const length = formatted.length;
-    
-    if (length > 14) return "text-lg md:text-2xl"; 
-    if (length > 10) return "text-xl md:text-3xl"; 
-    return "text-2xl md:text-4xl"; 
-  };
-
-  // Lógica Principal de Fluxo de Caixa (REGIME DE CAIXA)
-  // Agora desvinculado do Status Atual (Pendente/Pago) e focado puramente na data do pagamento.
-  // Isso permite que o status resete para "Pendente" no dia 01 sem apagar o histórico financeiro do mês anterior.
+  // --- LÓGICA DE DADOS (Mantida da versão anterior) ---
   const wasPaidInMonth = (client: Client, year: number, month: number) => {
     if (client.lastPaymentDate) {
         const payDate = new Date(client.lastPaymentDate);
         return payDate.getMonth() === month && payDate.getFullYear() === year;
     }
-    
-    // Fallback para dados legados (sem data): Confia no status apenas se for o mês corrente
-    // Isso evita distorções históricas para clientes antigos sem data gravada
     if (client.status === PaymentStatus.PAID) {
         const now = new Date();
         return now.getMonth() === month && now.getFullYear() === year;
     }
-    
     return false;
   };
 
   const financialStats = useMemo(() => {
     const targetEndDate = new Date(selectedYear, selectedMonth + 1, 0);
     
-    // Filtra clientes que já existiam até o fim do mês selecionado
     const clientsInPeriod = clients.filter(c => {
       if (!c.createdAt) return true;
       return new Date(c.createdAt) <= targetEndDate;
     });
 
     const totalMRR = clientsInPeriod.reduce((acc, curr) => acc + curr.monthlyValue, 0);
-    
-    // Lista de Pagos (Regime de Caixa): Só conta se pagou NESTE mês selecionado
     const paidList = clientsInPeriod.filter(c => wasPaidInMonth(c, selectedYear, selectedMonth));
-    
-    // Pendentes/Atrasados (Lógica Visual)
-    // Para a lista nominal, se o usuário pagou neste mês (paidList), ele não está pendente.
-    // Caso contrário, está pendente PARA ESSE MÊS VISUALIZADO.
-    const pendingOrOverdueList = clientsInPeriod.filter(c => !wasPaidInMonth(c, selectedYear, selectedMonth));
-    
     const paidValue = paidList.reduce((acc, curr) => acc + curr.monthlyValue, 0);
+    
+    // Para a tabela, usamos o status atual, mas ajustamos visualmente se já pagou neste mês histórico
+    const displayList = clientsInPeriod.map(c => {
+        const isPaidHistory = wasPaidInMonth(c, selectedYear, selectedMonth);
+        return {
+            ...c,
+            displayStatus: isPaidHistory ? PaymentStatus.PAID : (c.status === PaymentStatus.PAID ? PaymentStatus.PENDING : c.status)
+        };
+    });
 
-    // Cálculo de crescimento (Simples)
+    // Stats para a barra de progresso e analytics
+    const pendingValue = totalMRR - paidValue;
+    const progressPercentage = totalMRR > 0 ? (paidValue / totalMRR) * 100 : 0;
+    
+    // Contagens para Analytics
+    const countPaid = paidList.length;
+    const countOverdue = displayList.filter(c => c.displayStatus === PaymentStatus.OVERDUE).length;
+    const countPending = displayList.length - countPaid - countOverdue;
+
+    // Crescimento (Growth)
     const prevMonthDate = new Date(selectedYear, selectedMonth, 0);
     const prevMonthClients = clients.filter(c => c.createdAt && new Date(c.createdAt) <= prevMonthDate);
     const prevMonthMRR = prevMonthClients.reduce((acc, curr) => acc + curr.monthlyValue, 0);
-    
-    const growth = prevMonthMRR > 0 ? ((totalMRR - prevMonthMRR) / prevMonthMRR) * 100 : 100;
-    const ticketMedio = clientsInPeriod.length > 0 ? totalMRR / clientsInPeriod.length : 0;
-    
+    const growth = prevMonthMRR > 0 ? ((totalMRR - prevMonthMRR) / prevMonthMRR) * 100 : 0;
+
     return { 
       totalMRR, 
       paidValue, 
-      growth, 
-      clientsCount: clientsInPeriod.length,
-      paidList,
-      pendingList: pendingOrOverdueList, 
-      ticketMedio
+      pendingValue,
+      progressPercentage,
+      displayList,
+      growth,
+      counts: { paid: countPaid, pending: countPending, overdue: countOverdue, total: displayList.length }
     };
   }, [clients, selectedMonth, selectedYear]);
 
-  const progressionData = useMemo(() => {
-    const data = [];
-    const shortMonths = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-    
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(selectedYear, selectedMonth - i, 1);
-      const m = d.getMonth();
-      const y = d.getFullYear();
-      const endOfM = new Date(y, m + 1, 0);
-      
-      const clientsAtPoint = clients.filter(c => c.createdAt && new Date(c.createdAt) <= endOfM);
-      
-      // Cálculo Dinâmico por Mês (Histórico)
-      const pago = clientsAtPoint
-        .filter(c => wasPaidInMonth(c, y, m))
-        .reduce((acc, curr) => acc + curr.monthlyValue, 0);
-      
-      // Removemos o cálculo de pendente visualmente, focando apenas no pago
-      data.push({ 
-        name: `${shortMonths[m]}/${String(y).slice(-2)}`, 
-        pago
-      });
-    }
-    return data;
-  }, [clients, selectedMonth, selectedYear]);
+  // Ícones SVG Inline para o Design System
+  const Icons = {
+    Wallet: () => (
+      <svg className="w-6 h-6 text-indigo-600" fill="currentColor" viewBox="0 0 24 24"><path d="M19 7h-1V5.5a2.5 2.5 0 00-5 0V7h-1V5.5a4.5 4.5 0 019 0V7z" opacity="0.4" /><path fillRule="evenodd" d="M22 11v8a3 3 0 01-3 3H5a3 3 0 01-3-3v-8a3 3 0 013-3h14a3 3 0 013 3zm-9 3a2 2 0 100 4 2 2 0 000-4z" clipRule="evenodd" /></svg>
+    ),
+    Expense: () => (
+      <svg className="w-6 h-6 text-rose-500" fill="currentColor" viewBox="0 0 24 24"><path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"/><path d="M22 12a2 2 0 012 2v4a2 2 0 01-2 2H20a2 2 0 01-2-2v-4a2 2 0 012-2h2z" /></svg>
+    ),
+    ArrowUp: () => <svg className="w-3 h-3 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>,
+    ArrowDown: () => <svg className="w-3 h-3 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>,
+    Filter: () => <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>,
+    Dots: () => <svg className="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" /></svg>
+  };
+
+  // Componente de Avatar Simples
+  const Avatar = ({ name }: { name: string }) => {
+    const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    const colors = ['bg-indigo-100 text-indigo-600', 'bg-emerald-100 text-emerald-600', 'bg-amber-100 text-amber-600', 'bg-rose-100 text-rose-600', 'bg-sky-100 text-sky-600'];
+    const colorClass = colors[name.length % colors.length];
+
+    return (
+      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-xs ${colorClass}`}>
+        {initials}
+      </div>
+    );
+  };
 
   return (
-    <div className="space-y-6 md:space-y-8 animate-in fade-in duration-500 pb-10">
-      {/* Header com Filtros */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 md:gap-6">
+    <div className="space-y-6 md:space-y-8 animate-in fade-in duration-500 pb-10 font-sans">
+      
+      {/* HEADER & FILTERS */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tighter">Status Financeiro</h2>
-          <p className="text-sm md:text-base text-slate-500 font-medium">Acompanhamento de fluxo de caixa (Regime de Caixa).</p>
+           <h2 className="text-2xl font-bold text-slate-900">Dashboard</h2>
+           <p className="text-slate-500 text-sm font-medium">Visão geral financeira de {months[selectedMonth]} {selectedYear}</p>
         </div>
-
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 md:gap-4">
-          <div className="flex items-center gap-2 md:gap-3 bg-white p-1.5 md:p-2 rounded-2xl border border-slate-200 shadow-sm">
-            <select value={selectedMonth} onChange={(e) => setSelectedMonth(parseInt(e.target.value))} className="bg-transparent border-none font-bold text-xs md:text-sm text-slate-700 focus:ring-0 cursor-pointer px-3 md:px-4 py-2 outline-none">
+        <div className="flex items-center gap-3 bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
+             <select 
+               value={selectedMonth} 
+               onChange={(e) => setSelectedMonth(parseInt(e.target.value))} 
+               className="bg-transparent border-none text-xs font-bold text-slate-600 focus:ring-0 cursor-pointer py-2 pl-3 pr-8 rounded-lg hover:bg-slate-50 outline-none"
+             >
               {months.map((m, i) => <option key={m} value={i}>{m}</option>)}
             </select>
-            <div className="w-px h-6 bg-slate-200" />
-            <select value={selectedYear} onChange={(e) => setSelectedYear(parseInt(e.target.value))} className="bg-transparent border-none font-bold text-xs md:text-sm text-slate-700 focus:ring-0 cursor-pointer px-3 md:px-4 py-2 outline-none">
+            <div className="w-px h-4 bg-slate-200"></div>
+            <select 
+              value={selectedYear} 
+              onChange={(e) => setSelectedYear(parseInt(e.target.value))} 
+              className="bg-transparent border-none text-xs font-bold text-slate-600 focus:ring-0 cursor-pointer py-2 pl-3 pr-8 rounded-lg hover:bg-slate-50 outline-none"
+            >
               {years.map(y => <option key={y} value={y}>{y}</option>)}
             </select>
-          </div>
-          
-          <button 
-            onClick={onQuickAdd}
-            className="flex items-center justify-center gap-3 px-6 md:px-8 py-3.5 md:py-4 bg-indigo-600 text-white text-sm md:text-base font-black rounded-2xl hover:bg-indigo-700 shadow-xl shadow-indigo-100 transition-all active:scale-95"
-          >
-            <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" /></svg>
-            Novo Cliente
-          </button>
         </div>
       </div>
 
-      {/* Grid de Métricas Adaptativo */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        <div className="bg-indigo-600 p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-xl shadow-indigo-100 text-white transform hover:scale-[1.01] transition-transform">
-          <p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-80">MRR Total (Potencial)</p>
-          <p className={`${getFontSize(financialStats.totalMRR)} font-black mt-2 transition-all tracking-tight`}>
-            {formatCurrency(financialStats.totalMRR)}
-          </p>
-          <div className="flex items-center gap-2 mt-4 text-[10px] font-bold bg-white/10 w-fit px-3 py-1 rounded-full">
-            <span>+{financialStats.growth.toFixed(0)}% vs anterior</span>
-          </div>
-        </div>
-        {/* CARD RECEBIDO - COR VERDE (EMERALD) */}
-        <div className="bg-emerald-500 p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-xl shadow-emerald-100 text-white transform hover:scale-[1.01] transition-transform">
-          <p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-80">Recebido (Caixa)</p>
-          <p className={`${getFontSize(financialStats.paidValue)} font-black mt-2 transition-all tracking-tight`}>
-            {formatCurrency(financialStats.paidValue)}
-          </p>
-          <p className="text-[10px] font-bold mt-4 opacity-80">{financialStats.paidList.length} pagamentos confirmados</p>
-        </div>
-        <div className="bg-white p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-slate-200 shadow-sm">
-          <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Pendente / Aberto</p>
-          <p className={`${getFontSize(financialStats.totalMRR - financialStats.paidValue)} font-black text-slate-900 mt-2 transition-all tracking-tight`}>
-             {formatCurrency(financialStats.totalMRR - financialStats.paidValue)}
-          </p>
-          <p className="text-[10px] font-black text-amber-500 mt-4 uppercase tracking-tighter">Aguardando {financialStats.pendingList.length} transações</p>
-        </div>
-        <div className="bg-white p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-slate-200 shadow-sm">
-          <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Ticket Médio</p>
-          <p className={`${getFontSize(financialStats.ticketMedio)} font-black text-slate-900 mt-2 transition-all tracking-tight`}>
-            {formatCurrency(financialStats.ticketMedio)}
-          </p>
-          <p className="text-[10px] font-bold text-slate-400 mt-4 uppercase">Base: {financialStats.clientsCount} clientes</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
-        {/* Gráfico de Evolução - AGORA SÓ MOSTRA RECEITA */}
-        <div className="lg:col-span-2 bg-white p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] border border-slate-200 shadow-sm min-h-[400px] md:h-auto relative flex flex-col">
-          <div className="flex items-center justify-between mb-6 md:mb-8">
+      {/* TOP METRICS GRID (2x2 Layout like reference) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        {/* CARD 1: TOTAL INCOME (MRR) */}
+        <div className="bg-white p-6 rounded-[1.5rem] shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-100 flex flex-col justify-between h-40 md:h-48 relative overflow-hidden group hover:border-indigo-100 transition-all">
+          <div className="flex justify-between items-start">
             <div>
-              <h3 className="text-lg md:text-xl font-black text-slate-800">Receita Realizada (Últimos 6 meses)</h3>
-              <p className="text-[10px] md:text-xs text-slate-400 font-bold uppercase tracking-wider">Apenas valores efetivamente pagos</p>
+              <p className="text-slate-500 font-semibold text-sm">Receita Potencial</p>
+              <h3 className="text-2xl md:text-3xl font-black text-slate-900 mt-2 tracking-tight">{formatCurrency(financialStats.totalMRR)}</h3>
+            </div>
+            <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center group-hover:scale-110 transition-transform">
+               <Icons.Wallet />
             </div>
           </div>
-          <div className="h-[280px] md:h-[320px] w-full mb-4">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={progressionData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis 
-                  dataKey="name" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fontSize: 10, fontWeight: 800, fill: '#94a3b8' }} 
-                  dy={10} 
-                />
-                <YAxis 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fontSize: 10, fontWeight: 800, fill: '#94a3b8' }} 
-                  tickFormatter={(v) => `R$${v}`} 
-                />
-                <Tooltip 
-                  cursor={{ fill: '#f8fafc', radius: 10 }}
-                  contentStyle={{ 
-                    borderRadius: '16px', 
-                    border: 'none', 
-                    boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
-                    fontWeight: 'bold',
-                    fontSize: '11px',
-                    padding: '12px'
-                  }} 
-                  formatter={(value: number) => [formatCurrency(value), 'Receita']}
-                />
-                {/* Removido Legend pois agora só tem uma barra */}
-                <Bar name="Receita" dataKey="pago" fill="#10b981" radius={[8, 8, 8, 8]} barSize={40} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Legenda Interativa de Explicação */}
-          <div className="mt-auto bg-slate-50 border border-slate-100 rounded-2xl p-4 flex items-start gap-4 animate-in slide-in-from-bottom-2">
-             <div className="p-2.5 bg-white rounded-xl border border-slate-200 shadow-sm shrink-0 text-emerald-600">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-             </div>
-             <div>
-                <p className="text-[10px] font-black text-slate-700 uppercase tracking-wide mb-1">Automação de Virada</p>
-                <p className="text-xs text-slate-500 leading-relaxed font-medium">
-                  <strong>Status Automático:</strong> Todo dia 01, clientes <span className="text-emerald-600 font-bold">PAGOS</span> voltam para <span className="text-amber-500 font-bold">PENDENTE</span> para o novo ciclo. 
-                  O gráfico acima mantém o histórico dos pagamentos anteriores, garantindo que sua receita passada fique salva.
-                </p>
-             </div>
+          <div className="flex items-center gap-2 mt-auto">
+             <span className={`flex items-center gap-1 text-xs font-bold ${financialStats.growth >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                {financialStats.growth >= 0 ? <Icons.ArrowUp /> : <Icons.ArrowDown />}
+                {Math.abs(financialStats.growth).toFixed(1)}%
+             </span>
+             <span className="text-slate-400 text-xs font-medium">desde o mês passado</span>
           </div>
         </div>
 
-        {/* Listagem Nominal */}
-        <div className="bg-white p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] border border-slate-200 shadow-sm flex flex-col min-h-[400px] md:h-[480px]">
-          <div className="mb-6 md:mb-8">
-            <h3 className="text-lg md:text-xl font-black text-slate-800">Detalhe Mensal</h3>
-            <p className="text-[10px] md:text-xs text-slate-400 font-bold uppercase tracking-wider">Quem pagou em {months[selectedMonth]}</p>
+        {/* CARD 2: SPENDING LIMIT (Recebimento Goal) */}
+        <div className="bg-white p-6 rounded-[1.5rem] shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-100 flex flex-col justify-between h-40 md:h-48">
+          <div className="flex justify-between items-center mb-2">
+            <p className="text-slate-500 font-semibold text-sm">Meta de Recebimento</p>
+            <span className="text-xs font-bold text-slate-400 border border-slate-100 px-2 py-1 rounded-lg bg-slate-50">{selectedYear}</span>
           </div>
           
-          <div className="flex-1 overflow-y-auto space-y-6 md:space-y-8 pr-1 custom-scrollbar">
-            
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest bg-amber-50 px-2 py-0.5 rounded-full">Não Pagaram no Mês</span>
-                <span className="text-[9px] font-black text-amber-500">{financialStats.pendingList.length}</span>
-              </div>
-              {financialStats.pendingList.length === 0 && (
-                <p className="text-[10px] text-slate-400 font-bold text-center py-4">Todos pagaram neste mês!</p>
-              )}
-              {financialStats.pendingList.map(c => (
-                <div key={c.id} className="flex justify-between items-center text-xs">
-                  <span className="font-bold text-slate-700 truncate max-w-[120px]">{c.name}</span>
-                  <div className="flex items-center gap-2">
-                     {c.status === PaymentStatus.OVERDUE && <span className="text-[8px] font-black text-red-500">ATRASADO HOJE</span>}
-                     <span className="font-black text-amber-600">{formatCurrency(c.monthlyValue)}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {financialStats.paidList.length > 0 && (
-              <div className="space-y-3 border-t border-slate-50 pt-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-50 px-2 py-0.5 rounded-full">Confirmados em {months[selectedMonth]}</span>
-                  <span className="text-[9px] font-black text-emerald-500">{financialStats.paidList.length}</span>
-                </div>
-                {financialStats.paidList.map(c => (
-                  <div key={c.id} className="flex justify-between items-center text-xs opacity-80">
-                    <span className="font-bold text-slate-700 truncate max-w-[120px]">{c.name}</span>
-                    <span className="font-black text-emerald-600">{formatCurrency(c.monthlyValue)}</span>
-                  </div>
-                ))}
-              </div>
-            )}
+          <div className="mt-auto">
+             <div className="flex items-end gap-2 mb-3">
+               <span className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">{formatCurrency(financialStats.paidValue)}</span>
+               <span className="text-xs font-bold text-slate-400 mb-1.5">de {formatCurrency(financialStats.totalMRR)}</span>
+             </div>
+             
+             <div className="relative w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+                <div 
+                  className="absolute top-0 left-0 h-full bg-indigo-600 rounded-full transition-all duration-1000 ease-out"
+                  style={{ width: `${financialStats.progressPercentage}%` }}
+                ></div>
+             </div>
+             <p className="text-[10px] text-slate-400 font-bold mt-2 text-right">{financialStats.progressPercentage.toFixed(0)}% Completo</p>
           </div>
+        </div>
+
+        {/* CARD 3: TOTAL EXPENSE (Pending/Overdue) */}
+        <div className="bg-white p-6 rounded-[1.5rem] shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-100 flex flex-col justify-between h-40 md:h-48 group hover:border-rose-100 transition-all">
+          <div className="flex justify-between items-start">
+            <div>
+              <p className="text-slate-500 font-semibold text-sm">Pendente/Atrasado</p>
+              <h3 className="text-2xl md:text-3xl font-black text-slate-900 mt-2 tracking-tight">{formatCurrency(financialStats.pendingValue)}</h3>
+            </div>
+            <div className="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center group-hover:scale-110 transition-transform">
+               <Icons.Expense />
+            </div>
+          </div>
+          <div className="flex items-center gap-2 mt-auto">
+             <span className="flex items-center gap-1 text-xs font-bold text-rose-500">
+                <Icons.ArrowDown />
+                {((financialStats.pendingValue / (financialStats.totalMRR || 1)) * 100).toFixed(1)}%
+             </span>
+             <span className="text-slate-400 text-xs font-medium">do total previsto</span>
+          </div>
+        </div>
+
+        {/* CARD 4: EXPENSES ANALYTICS (Wallet Distribution) */}
+        <div className="bg-white p-6 rounded-[1.5rem] shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-100 flex flex-col justify-between h-40 md:h-48">
+          <div className="flex justify-between items-center mb-2">
+             <p className="text-slate-500 font-semibold text-sm">Distribuição</p>
+             <span className="text-xs font-bold text-slate-400 border border-slate-100 px-2 py-1 rounded-lg bg-slate-50">Status</span>
+          </div>
+          
+          <div className="mt-auto space-y-4">
+             {/* Segmented Progress Bar */}
+             <div className="flex w-full h-3 rounded-full overflow-hidden gap-1">
+                {financialStats.counts.paid > 0 && (
+                    <div style={{ flex: financialStats.counts.paid }} className="bg-emerald-400 h-full rounded-l-full"></div>
+                )}
+                {financialStats.counts.pending > 0 && (
+                    <div style={{ flex: financialStats.counts.pending }} className="bg-indigo-400 h-full"></div>
+                )}
+                {financialStats.counts.overdue > 0 && (
+                    <div style={{ flex: financialStats.counts.overdue }} className="bg-rose-400 h-full rounded-r-full"></div>
+                )}
+                {financialStats.counts.total === 0 && <div className="w-full bg-slate-100 h-full"></div>}
+             </div>
+
+             <div className="flex justify-between text-[10px] font-bold text-slate-500">
+                <div className="flex items-center gap-1.5">
+                   <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                   Pago ({financialStats.counts.paid})
+                </div>
+                <div className="flex items-center gap-1.5">
+                   <span className="w-2 h-2 rounded-full bg-indigo-400"></span>
+                   Aberto ({financialStats.counts.pending})
+                </div>
+                <div className="flex items-center gap-1.5">
+                   <span className="w-2 h-2 rounded-full bg-rose-400"></span>
+                   Atrasado ({financialStats.counts.overdue})
+                </div>
+             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* TRANSACTIONS HISTORY TABLE */}
+      <div className="bg-white rounded-[1.5rem] md:rounded-[2rem] border border-slate-100 shadow-[0_2px_15px_rgba(0,0,0,0.03)] p-6 md:p-8">
+        <div className="flex items-center justify-between mb-8">
+           <h3 className="text-lg md:text-xl font-bold text-slate-900">Histórico de Clientes</h3>
+           <div className="flex gap-2">
+             <button className="flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 text-xs font-bold rounded-xl transition-colors border border-slate-200">
+                <Icons.Filter />
+                Filtrar
+             </button>
+             <button onClick={onQuickAdd} className="w-8 h-8 flex items-center justify-center bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" /></svg>
+             </button>
+           </div>
+        </div>
+
+        <div className="overflow-x-auto">
+            <table className="w-full min-w-[700px]">
+                <thead>
+                    <tr className="text-left border-b border-slate-100">
+                        <th className="pb-4 text-[10px] font-black uppercase text-slate-400 tracking-wider w-[40%]">Nome / Cliente</th>
+                        <th className="pb-4 text-[10px] font-black uppercase text-slate-400 tracking-wider w-[15%]">Tipo</th>
+                        <th className="pb-4 text-[10px] font-black uppercase text-slate-400 tracking-wider w-[15%]">Vencimento</th>
+                        <th className="pb-4 text-[10px] font-black uppercase text-slate-400 tracking-wider w-[15%]">Valor</th>
+                        <th className="pb-4 text-[10px] font-black uppercase text-slate-400 tracking-wider w-[15%] text-right">Status</th>
+                    </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                    {financialStats.displayList.length === 0 ? (
+                        <tr>
+                            <td colSpan={5} className="py-10 text-center text-slate-400 text-sm font-medium">
+                                Nenhum cliente encontrado neste período.
+                            </td>
+                        </tr>
+                    ) : (
+                        financialStats.displayList.map((client) => (
+                            <tr key={client.id} className="group hover:bg-slate-50/50 transition-colors">
+                                <td className="py-4 pr-4">
+                                    <div className="flex items-center gap-4">
+                                        <Avatar name={client.name} />
+                                        <div>
+                                            <p className="font-bold text-slate-900 text-sm">{client.name}</p>
+                                            <p className="text-xs text-slate-400 font-medium">{client.whatsapp}</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td className="py-4 text-sm font-medium text-slate-600">
+                                    Mensalidade
+                                </td>
+                                <td className="py-4 text-sm font-bold text-slate-700">
+                                    {new Date().getFullYear() === selectedYear && new Date().getMonth() === selectedMonth 
+                                      ? `Dia ${client.dueDay}` 
+                                      : `${client.dueDay}/${selectedMonth + 1}/${selectedYear}`
+                                    }
+                                </td>
+                                <td className="py-4 text-sm font-black text-slate-900">
+                                    {formatCurrency(client.monthlyValue)}
+                                </td>
+                                <td className="py-4 text-right">
+                                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide
+                                        ${client.displayStatus === PaymentStatus.PAID ? 'bg-emerald-100 text-emerald-600' : 
+                                          client.displayStatus === PaymentStatus.OVERDUE ? 'bg-rose-100 text-rose-600' : 
+                                          'bg-amber-100 text-amber-600'
+                                        }`}
+                                    >
+                                        {client.displayStatus === PaymentStatus.PAID ? 'Pago' : 
+                                         client.displayStatus === PaymentStatus.OVERDUE ? 'Atrasado' : 'Aberto'}
+                                    </span>
+                                </td>
+                            </tr>
+                        ))
+                    )}
+                </tbody>
+            </table>
         </div>
       </div>
     </div>
