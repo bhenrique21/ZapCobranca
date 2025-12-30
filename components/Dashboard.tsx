@@ -27,6 +27,19 @@ const Dashboard: React.FC<DashboardProps> = ({ clients, logs, onQuickAdd }) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
   };
 
+  // Função para ajustar o tamanho da fonte baseado no tamanho do número
+  const getFontSize = (val: number) => {
+    const formatted = formatCurrency(val);
+    const length = formatted.length;
+
+    // Ex: "R$ 1.000.000,00" tem 13 caracteres.
+    // Ex: "R$ 12.500,00" tem 11 caracteres.
+    
+    if (length > 14) return "text-lg md:text-2xl"; // Números muito grandes (ex: dezenas de milhões)
+    if (length > 10) return "text-xl md:text-3xl"; // Números médios (ex: dezenas de milhares)
+    return "text-2xl md:text-4xl"; // Padrão
+  };
+
   const financialStats = useMemo(() => {
     const targetEndDate = new Date(selectedYear, selectedMonth + 1, 0);
     
@@ -47,6 +60,8 @@ const Dashboard: React.FC<DashboardProps> = ({ clients, logs, onQuickAdd }) => {
     
     const growth = prevMonthMRR > 0 ? ((totalMRR - prevMonthMRR) / prevMonthMRR) * 100 : 100;
     
+    const ticketMedio = clientsInPeriod.length > 0 ? totalMRR / clientsInPeriod.length : 0;
+    
     return { 
       totalMRR, 
       paidValue, 
@@ -54,7 +69,8 @@ const Dashboard: React.FC<DashboardProps> = ({ clients, logs, onQuickAdd }) => {
       clientsCount: clientsInPeriod.length,
       paidList,
       pendingList,
-      overdueList
+      overdueList,
+      ticketMedio
     };
   }, [clients, selectedMonth, selectedYear]);
 
@@ -121,7 +137,9 @@ const Dashboard: React.FC<DashboardProps> = ({ clients, logs, onQuickAdd }) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         <div className="bg-indigo-600 p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-xl shadow-indigo-100 text-white transform hover:scale-[1.01] transition-transform">
           <p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-80">MRR Total</p>
-          <p className="text-2xl md:text-4xl font-black mt-2">{formatCurrency(financialStats.totalMRR)}</p>
+          <p className={`${getFontSize(financialStats.totalMRR)} font-black mt-2 transition-all tracking-tight`}>
+            {formatCurrency(financialStats.totalMRR)}
+          </p>
           <div className="flex items-center gap-2 mt-4 text-[10px] font-bold bg-white/10 w-fit px-3 py-1 rounded-full">
             <span>+{financialStats.growth.toFixed(0)}% vs anterior</span>
           </div>
@@ -129,18 +147,22 @@ const Dashboard: React.FC<DashboardProps> = ({ clients, logs, onQuickAdd }) => {
         {/* CARD RECEBIDO - COR VERDE (EMERALD) */}
         <div className="bg-emerald-500 p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-xl shadow-emerald-100 text-white transform hover:scale-[1.01] transition-transform">
           <p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-80">Recebido</p>
-          <p className="text-2xl md:text-4xl font-black mt-2">{formatCurrency(financialStats.paidValue)}</p>
+          <p className={`${getFontSize(financialStats.paidValue)} font-black mt-2 transition-all tracking-tight`}>
+            {formatCurrency(financialStats.paidValue)}
+          </p>
           <p className="text-[10px] font-bold mt-4 opacity-80">{financialStats.paidList.length} clientes ativos pagos</p>
         </div>
         <div className="bg-white p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-slate-200 shadow-sm">
           <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Pendente</p>
-          <p className="text-2xl md:text-4xl font-black text-slate-900 mt-2">{formatCurrency(financialStats.totalMRR - financialStats.paidValue)}</p>
+          <p className={`${getFontSize(financialStats.totalMRR - financialStats.paidValue)} font-black text-slate-900 mt-2 transition-all tracking-tight`}>
+             {formatCurrency(financialStats.totalMRR - financialStats.paidValue)}
+          </p>
           <p className="text-[10px] font-black text-amber-500 mt-4 uppercase tracking-tighter">Aguardando {financialStats.pendingList.length + financialStats.overdueList.length} transações</p>
         </div>
         <div className="bg-white p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-slate-200 shadow-sm">
           <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Ticket Médio</p>
-          <p className="text-2xl md:text-4xl font-black text-slate-900 mt-2">
-            {formatCurrency(financialStats.clientsCount > 0 ? financialStats.totalMRR / financialStats.clientsCount : 0)}
+          <p className={`${getFontSize(financialStats.ticketMedio)} font-black text-slate-900 mt-2 transition-all tracking-tight`}>
+            {formatCurrency(financialStats.ticketMedio)}
           </p>
           <p className="text-[10px] font-bold text-slate-400 mt-4 uppercase">Total: {financialStats.clientsCount} clientes</p>
         </div>
