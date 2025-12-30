@@ -10,6 +10,7 @@ interface AuthProps {
 
 const Auth: React.FC<AuthProps> = ({ onLogin }) => {
   const [isLogin, setIsLogin] = useState(true);
+  const [isRecovering, setIsRecovering] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -30,6 +31,36 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
       setRememberMe(true);
     }
   }, []);
+
+  const handleRecoverPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setInfo(null);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: window.location.origin,
+      });
+
+      if (error) throw error;
+
+      setInfo('Se houver uma conta com este e-mail, enviamos um link de recuperação para você.');
+      setIsRecovering(false); // Volta para o login para mostrar a mensagem
+      setIsLogin(true);
+    } catch (err: any) {
+      // Por segurança, não confirmamos se o email existe ou não, mas logamos erro genérico
+      console.error('Erro recuperação:', err);
+      // Tratamento de limite de envio (Rate Limit)
+      if (err.message.includes('rate limit')) {
+        setError('Muitas tentativas. Aguarde alguns instantes antes de tentar novamente.');
+      } else {
+        setError('Erro ao enviar email de recuperação. Verifique o endereço digitado.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,9 +137,12 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
           <p className="text-slate-500 mt-2">Sua gestão B2B simplificada.</p>
         </div>
 
-        <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-xl">
+        <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-xl relative overflow-hidden">
           <h2 className="text-xl font-bold text-slate-800 mb-6 text-center">
-            {isLogin ? 'Faça seu login' : 'Crie sua conta em 10 segundos'}
+            {isRecovering 
+              ? 'Recuperar Senha' 
+              : (isLogin ? 'Faça seu login' : 'Crie sua conta em 10 segundos')
+            }
           </h2>
           
           {error && (
@@ -129,78 +163,135 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && (
+          {isRecovering ? (
+            <form onSubmit={handleRecoverPassword} className="space-y-4 animate-in fade-in slide-in-from-right-4">
+              <p className="text-sm text-slate-500 mb-4 text-center leading-relaxed">
+                Digite seu e-mail abaixo. Enviaremos um link mágico para você acessar sua conta e redefinir sua senha.
+              </p>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Nome Completo</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">E-mail Cadastrado</label>
                 <input
-                  type="text"
+                  type="email"
                   required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
-                  placeholder="Seu nome"
+                  placeholder="exemplo@email.com"
                 />
               </div>
-            )}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">E-mail</label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
-                placeholder="exemplo@email.com"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Senha</label>
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
-                placeholder="••••••••"
-              />
-            </div>
 
-            <div className="flex items-center gap-2 px-1">
-              <input
-                type="checkbox"
-                id="remember"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
-              />
-              <label htmlFor="remember" className="text-sm text-slate-600 cursor-pointer select-none font-medium">
-                Lembrar meus dados
-              </label>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-4 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 mt-4 disabled:opacity-50 flex justify-center items-center gap-2"
+              >
+                {loading && <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>}
+                {loading ? 'Enviando...' : 'Enviar Link de Recuperação'}
+              </button>
+              
+              <button 
+                type="button"
+                onClick={() => {
+                  setIsRecovering(false);
+                  setError(null);
+                  setInfo(null);
+                }}
+                className="w-full py-3 text-slate-400 font-bold hover:text-slate-600 transition-colors text-sm"
+              >
+                Voltar para o Login
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4 animate-in fade-in">
+              {!isLogin && (
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Nome Completo</label>
+                  <input
+                    type="text"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
+                    placeholder="Seu nome"
+                  />
+                </div>
+              )}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">E-mail</label>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
+                  placeholder="exemplo@email.com"
+                />
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-sm font-medium text-slate-700">Senha</label>
+                  {isLogin && (
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        setIsRecovering(true);
+                        setError(null);
+                        setInfo(null);
+                      }}
+                      className="text-xs font-bold text-indigo-600 hover:text-indigo-800"
+                    >
+                      Esqueci a senha
+                    </button>
+                  )}
+                </div>
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
+                  placeholder="••••••••"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 px-1">
+                <input
+                  type="checkbox"
+                  id="remember"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+                />
+                <label htmlFor="remember" className="text-sm text-slate-600 cursor-pointer select-none font-medium">
+                  Lembrar meus dados
+                </label>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-4 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 mt-4 disabled:opacity-50 flex justify-center items-center gap-2"
+              >
+                {loading && <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>}
+                {loading ? 'Entrando...' : isLogin ? 'Acessar Dashboard' : 'Criar minha conta'}
+              </button>
+            </form>
+          )}
+
+          {!isRecovering && (
+            <div className="mt-8 text-center">
+              <button 
+                onClick={() => {
+                  setIsLogin(!isLogin);
+                  setError(null);
+                  setInfo(null);
+                }}
+                className="text-sm font-semibold text-indigo-600 hover:text-indigo-700"
+              >
+                {isLogin ? 'Não tem conta? Cadastre-se grátis' : 'Já é usuário? Faça login'}
+              </button>
             </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-4 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 mt-4 disabled:opacity-50 flex justify-center items-center gap-2"
-            >
-              {loading && <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>}
-              {loading ? 'Entrando...' : isLogin ? 'Acessar Dashboard' : 'Criar minha conta'}
-            </button>
-          </form>
-
-          <div className="mt-8 text-center">
-            <button 
-              onClick={() => {
-                setIsLogin(!isLogin);
-                setError(null);
-                setInfo(null);
-              }}
-              className="text-sm font-semibold text-indigo-600 hover:text-indigo-700"
-            >
-              {isLogin ? 'Não tem conta? Cadastre-se grátis' : 'Já é usuário? Faça login'}
-            </button>
-          </div>
+          )}
         </div>
       </div>
     </div>
