@@ -1,27 +1,12 @@
 
 import React, { useState } from 'react';
 import { PLANS } from '../constants';
-import Dashboard from './Dashboard';
 import { Client, PaymentStatus } from '../types';
 
 interface LandingPageProps {
   onGetStarted: () => void;
   onLogin: () => void;
 }
-
-// Dados Mock para o Dashboard Preview
-const MOCK_CLIENTS: Client[] = Array.from({ length: 8 }).map((_, i) => ({
-  id: `mock-${i}`,
-  userId: 'mock',
-  name: ['Empresa Alpha', 'Design Studio', 'Consultoria Tech', 'Marketing Pro'][i % 4],
-  whatsapp: '11999999999',
-  monthlyValue: 1200 + (i * 150),
-  dueDay: 10,
-  status: i < 5 ? PaymentStatus.PAID : i < 7 ? PaymentStatus.PENDING : PaymentStatus.OVERDUE,
-  createdAt: new Date().toISOString(),
-  customMessage: '',
-  autoSend: false
-}));
 
 const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -170,22 +155,95 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
         </div>
       </section>
 
-      {/* --- DASHBOARD PREVIEW SECTION --- */}
+      {/* --- DASHBOARD PREVIEW SECTION (SIMPLIFICADO) --- */}
       <section className="py-16 md:py-24 px-4 overflow-hidden">
         <div className="max-w-7xl mx-auto text-center mb-10 md:mb-16">
           <div className="inline-block px-3 py-1 md:px-4 md:py-1.5 rounded-full bg-slate-100 text-slate-500 font-bold text-[10px] md:text-xs uppercase tracking-widest mb-4">Visão de Águia</div>
-          <h2 className="text-2xl md:text-5xl font-black text-slate-900 mb-4 md:mb-6">Controle total, zero planilhas.</h2>
-          <p className="text-sm md:text-lg text-slate-500 max-w-2xl mx-auto px-4">Substitua aquele caderno velho ou a planilha do Excel por um sistema simples e eficiente.</p>
+          <h2 className="text-2xl md:text-5xl font-black text-slate-900 mb-4 md:mb-6">Controle total, zero poluição.</h2>
+          <p className="text-sm md:text-lg text-slate-500 max-w-2xl mx-auto px-4">Substitua aquele caderno velho ou a planilha do Excel por um painel simples e direto ao ponto.</p>
         </div>
 
-        <div className="max-w-6xl mx-auto px-0 sm:px-4">
+        <div className="max-w-5xl mx-auto px-0 sm:px-4">
           <div className="relative group">
-               <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-[1.5rem] md:rounded-[2.5rem] blur-xl md:blur-2xl opacity-50 group-hover:opacity-75 transition duration-1000"></div>
-               <div className="relative bg-slate-50 rounded-[1rem] md:rounded-[2rem] border-[4px] md:border-[10px] border-white shadow-xl md:shadow-2xl overflow-hidden pointer-events-none select-none p-2 md:p-8 transform transition-transform duration-700 hover:scale-[1.005]">
-                 <div className="absolute inset-0 z-20"></div>
-                 {/* Ajuste de escala para mobile para que o dashboard não quebre */}
-                 <div className="opacity-100 scale-[0.65] md:scale-100 origin-top-left w-[150%] md:w-auto h-[600px] md:h-auto overflow-hidden md:overflow-visible">
-                    <Dashboard clients={MOCK_CLIENTS} logs={[]} onQuickAdd={() => {}} />
+               {/* Efeito de brilho de fundo */}
+               <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-[2rem] blur-2xl opacity-50 group-hover:opacity-75 transition duration-1000"></div>
+               
+               {/* Container do Dashboard Visual */}
+               <div className="relative bg-slate-50 rounded-[1.5rem] md:rounded-[2rem] border-[4px] md:border-[8px] border-white shadow-xl overflow-hidden pointer-events-none select-none">
+                 
+                 {/* Topo do Dashboard */}
+                 <div className="bg-white border-b border-slate-100 p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                      <h3 className="text-xl font-black text-slate-900 tracking-tight">Visão Geral</h3>
+                      <p className="text-xs text-slate-400 font-bold uppercase mt-1">Fevereiro 2025</p>
+                    </div>
+                    <div className="flex gap-2">
+                       <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs">A</div>
+                       <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 font-bold text-xs">
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                       </div>
+                    </div>
+                 </div>
+
+                 <div className="p-6 md:p-8 space-y-8">
+                    {/* Cards de Métricas */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                       <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+                          <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-2">Total</p>
+                          <p className="text-2xl font-black text-slate-900">R$ 8.450,00</p>
+                       </div>
+                       <div className="bg-emerald-50 p-5 rounded-2xl border border-emerald-100 shadow-sm">
+                          <p className="text-[10px] text-emerald-600 font-black uppercase tracking-widest mb-2">Recebido</p>
+                          <p className="text-2xl font-black text-emerald-700">R$ 5.200,00</p>
+                       </div>
+                       <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm opacity-60">
+                          <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-2">Pendente</p>
+                          <p className="text-2xl font-black text-slate-900">R$ 3.250,00</p>
+                       </div>
+                    </div>
+
+                    {/* Conteúdo Principal (Gráfico Simulado + Lista) */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        
+                        {/* Gráfico Simulado Visual */}
+                        <div className="md:col-span-2 bg-white rounded-3xl p-6 border border-slate-100 shadow-sm h-64 flex flex-col justify-end gap-2 relative overflow-hidden">
+                           <div className="absolute top-6 left-6 text-sm font-bold text-slate-800">Evolução Mensal</div>
+                           <div className="flex items-end justify-between h-32 w-full gap-2 md:gap-4 px-2">
+                              {[30, 45, 35, 60, 50, 75, 55, 80].map((h, i) => (
+                                 <div key={i} className="w-full bg-slate-100 rounded-t-lg relative group">
+                                    <div style={{ height: `${h}%` }} className="absolute bottom-0 w-full bg-indigo-500 rounded-t-lg opacity-80 group-hover:opacity-100 transition-all"></div>
+                                 </div>
+                              ))}
+                           </div>
+                           <div className="flex justify-between px-2 text-[10px] font-bold text-slate-300 uppercase">
+                              <span>Jan</span><span>Fev</span><span>Mar</span><span>Abr</span><span>Mai</span><span>Jun</span><span>Jul</span><span>Ago</span>
+                           </div>
+                        </div>
+
+                        {/* Lista Simplificada */}
+                        <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm flex flex-col gap-4">
+                           <div className="text-sm font-bold text-slate-800 mb-2">Últimas Cobranças</div>
+                           
+                           {[
+                             { name: 'Empresa Alpha', val: 'R$ 1.200', status: 'pago' },
+                             { name: 'Design Studio', val: 'R$ 850', status: 'pendente' },
+                             { name: 'Tech Solutions', val: 'R$ 2.400', status: 'atrasado' },
+                           ].map((item, i) => (
+                             <div key={i} className="flex items-center justify-between text-xs pb-3 border-b border-slate-50 last:border-0 last:pb-0">
+                                <div>
+                                   <p className="font-bold text-slate-700">{item.name}</p>
+                                   <p className="font-medium text-slate-400 text-[10px]">Mensalidade</p>
+                                </div>
+                                <div className="text-right">
+                                   <p className="font-black text-slate-800">{item.val}</p>
+                                   {item.status === 'pago' && <span className="text-[9px] font-black text-emerald-500 uppercase">Pago</span>}
+                                   {item.status === 'pendente' && <span className="text-[9px] font-black text-amber-500 uppercase">Aberto</span>}
+                                   {item.status === 'atrasado' && <span className="text-[9px] font-black text-red-500 uppercase">Atrasado</span>}
+                                </div>
+                             </div>
+                           ))}
+                        </div>
+                    </div>
                  </div>
                </div>
           </div>
@@ -206,7 +264,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
             {(Object.keys(PLANS) as Array<keyof typeof PLANS>).map((key) => {
               const plan = PLANS[key];
               return (
-                <div key={key} className={`relative p-6 md:p-10 rounded-[2rem] md:rounded-[2.5rem] border-2 transition-all bg-white flex flex-col items-start text-left ${plan.recommended ? 'border-indigo-600 shadow-2xl scale-100 md:scale-105 z-10 ring-4 ring-indigo-50 order-first md:order-none' : 'border-slate-200 hover:border-indigo-200 shadow-sm'}`}>
+                <div key={key} className={`relative p-6 md:p-10 rounded-[2rem] md:rounded-[2.5rem] border-2 transition-all bg-white flex flex-col items-center text-center ${plan.recommended ? 'border-indigo-600 shadow-2xl scale-100 md:scale-105 z-10 ring-4 ring-indigo-50 order-first md:order-none' : 'border-slate-200 hover:border-indigo-200 shadow-sm'}`}>
                   {plan.recommended && <div className="absolute -top-3 md:-top-4 left-1/2 -translate-x-1/2 bg-indigo-600 text-white text-[9px] md:text-[10px] font-black uppercase px-3 py-1 md:px-4 md:py-1.5 rounded-full shadow-lg">Mais Escolhido</div>}
                   <h3 className="text-xl md:text-2xl font-black text-slate-900">{plan.name}</h3>
                   <div className="my-4 md:my-6">
@@ -214,15 +272,15 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
                     <span className="text-slate-400 font-bold text-xs md:text-sm">/mês</span>
                   </div>
                   <ul className="space-y-3 md:space-y-4 w-full flex-1">
-                    <li className="flex items-center gap-3 text-xs md:text-sm text-slate-700 font-bold">
+                    <li className="flex items-center justify-center gap-3 text-xs md:text-sm text-slate-700 font-bold">
                       <svg className="w-5 h-5 text-indigo-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                       Até {plan.limit} Clientes
                     </li>
-                    <li className="flex items-center gap-3 text-xs md:text-sm text-slate-700 font-bold">
+                    <li className="flex items-center justify-center gap-3 text-xs md:text-sm text-slate-700 font-bold">
                       <svg className="w-5 h-5 text-indigo-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                       Envio via WhatsApp
                     </li>
-                    <li className="flex items-center gap-3 text-xs md:text-sm text-slate-700 font-bold">
+                    <li className="flex items-center justify-center gap-3 text-xs md:text-sm text-slate-700 font-bold">
                       <svg className="w-5 h-5 text-indigo-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                       Dashboard Completo
                     </li>
