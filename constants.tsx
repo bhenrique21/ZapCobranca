@@ -3,9 +3,9 @@ import React from 'react';
 
 export const PLANS = {
   STARTER: { 
-    name: 'Starter (Teste v2)', 
+    name: 'Starter (Teste v3)', 
     limit: 5, 
-    price: 'R$ 1,00',
+    price: 'R$ 2,00',
     description: 'Plano de teste para validação de pagamentos.',
     recommended: false
   },

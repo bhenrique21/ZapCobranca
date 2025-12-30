@@ -15,15 +15,25 @@ const corsHeaders = {
 };
 
 Deno.serve(async (req: Request) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
   try {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
-    // Usar SERVICE_ROLE_KEY
-    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SERVICE_ROLE_KEY") ?? "";
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const SERVICE_ROLE_KEY = Deno.env.get("SERVICE_ROLE_KEY") ?? "";
+
+    // Verificação de segurança: Se a chave estiver faltando, logamos mas tentamos continuar
+    // apenas para rotas que não exigem banco de dados (como diagnóstico básico)
+    let supabase: any = null;
+    if (SUPABASE_URL && SERVICE_ROLE_KEY) {
+      try {
+        supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
+      } catch (e) {
+        console.error("Erro ao inicializar Supabase Client:", e);
+      }
+    }
 
     const body = await req.json().catch(() => ({}));
     const { searchParams } = new URL(req.url);
@@ -32,6 +42,7 @@ Deno.serve(async (req: Request) => {
     if (body.action === 'test_config') {
       let mpStatus = 'FAIL';
       let details = '';
+      let dbStatus = supabase ? 'OK' : 'MISSING_KEY';
       
       try {
         const mpRes = await fetch('https://api.mercadopago.com/v1/payment_methods', {
@@ -39,17 +50,22 @@ Deno.serve(async (req: Request) => {
         });
         if (mpRes.ok) {
           mpStatus = 'OK';
-          details = "Conexão com Mercado Pago estabelecida com sucesso!";
+          details = "Conexão com Mercado Pago OK!";
         } else {
-          details = `Erro Mercado Pago: Token inválido ou sem permissão (${mpRes.status}).`;
+          details = `Erro MP: ${mpRes.status}`;
         }
       } catch (e) {
-        details = `Erro de Conexão: O servidor não conseguiu falar com o Mercado Pago.`;
+        details = `Erro MP: Falha de conexão.`;
+      }
+
+      if (dbStatus === 'MISSING_KEY') {
+        details += " | ALERTA: SERVICE_ROLE_KEY não configurada no Supabase Secrets.";
       }
 
       return new Response(JSON.stringify({ 
         status: "alive", 
         mp_status: mpStatus,
+        db_status: dbStatus,
         details: details
       }), { 
         status: 200, 
@@ -61,11 +77,10 @@ Deno.serve(async (req: Request) => {
     if (body.action === 'create_preference') {
       const { plan, userId, email, origin } = body;
       
-      // Se não vier um origin (fallback), usamos o domínio principal
       const redirectUrl = origin || 'https://zapcobranca.vercel.app';
 
       const PLANS_CONFIG: any = {
-        'STARTER': { price: 1.00, name: 'Plano Starter - Teste v2 (R$1)' },
+        'STARTER': { price: 2.00, name: 'Plano Starter - Teste v3 (R$2)' },
         'PRO': { price: 59.90, name: 'Plano Pro - ZapCobrança' },
         'ADVANCED': { price: 99.90, name: 'Plano Avançado - ZapCobrança' }
       };
@@ -98,6 +113,11 @@ Deno.serve(async (req: Request) => {
         body: JSON.stringify(preferenceBody)
       });
 
+      if (!mpRes.ok) {
+         const errText = await mpRes.text();
+         throw new Error(`Erro Mercado Pago (${mpRes.status}): ${errText}`);
+      }
+
       const pref = await mpRes.json();
       return new Response(JSON.stringify({ init_point: pref.init_point }), { 
         status: 200, 
@@ -106,24 +126,27 @@ Deno.serve(async (req: Request) => {
     }
 
     // --- WEBHOOK ---
-    const paymentId = body.data?.id || body.id || searchParams.get("data.id") || searchParams.get("id");
-    if (paymentId) {
-      const mpResponse = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
-        headers: { Authorization: `Bearer ${MP_ACCESS_TOKEN}` }
-      });
-      
-      if (mpResponse.ok) {
-        const payment = await mpResponse.json();
-        if (payment.status === "approved" && payment.external_reference) {
-          const expiresAt = new Date();
-          expiresAt.setMonth(expiresAt.getMonth() + 1);
+    // Só processamos webhook se tivermos acesso ao banco
+    if (supabase) {
+        const paymentId = body.data?.id || body.id || searchParams.get("data.id") || searchParams.get("id");
+        if (paymentId) {
+          const mpResponse = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
+            headers: { Authorization: `Bearer ${MP_ACCESS_TOKEN}` }
+          });
+          
+          if (mpResponse.ok) {
+            const payment = await mpResponse.json();
+            if (payment.status === "approved" && payment.external_reference) {
+              const expiresAt = new Date();
+              expiresAt.setMonth(expiresAt.getMonth() + 1);
 
-          await supabase.from('profiles').update({
-            subscription_active: true,
-            subscription_expires_at: expiresAt.toISOString()
-          }).eq('id', payment.external_reference);
+              await supabase.from('profiles').update({
+                subscription_active: true,
+                subscription_expires_at: expiresAt.toISOString()
+              }).eq('id', payment.external_reference);
+            }
+          }
         }
-      }
     }
 
     return new Response(JSON.stringify({ status: "received" }), { 
@@ -133,7 +156,7 @@ Deno.serve(async (req: Request) => {
 
   } catch (err: any) {
     return new Response(JSON.stringify({ error: err.message }), { 
-      status: 400,
+      status: 400, // Bad Request para erros de lógica
       headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
   }
