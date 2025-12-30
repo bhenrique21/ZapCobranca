@@ -153,15 +153,30 @@ const Dashboard: React.FC<DashboardProps> = ({ clients, logs, onQuickAdd }) => {
 
       {/* Grid de Métricas Adaptativo */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        <div className="bg-indigo-600 p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-xl shadow-indigo-100 text-white transform hover:scale-[1.01] transition-transform">
-          <p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-80">MRR Total (Potencial)</p>
-          <p className={`${getFontSize(financialStats.totalMRR)} font-black mt-2 transition-all tracking-tight`}>
-            {formatCurrency(financialStats.totalMRR)}
-          </p>
-          <div className="flex items-center gap-2 mt-4 text-[10px] font-bold bg-white/10 w-fit px-3 py-1 rounded-full">
-            <span>+{financialStats.growth.toFixed(0)}% vs anterior</span>
-          </div>
+        
+        {/* HERO CARD - FATURAMENTO PREVISTO (Tema Escuro) */}
+        <div className="bg-slate-900 p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-2xl shadow-slate-200 text-white transform hover:scale-[1.01] transition-transform relative overflow-hidden group">
+           {/* Decoração de Fundo */}
+           <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity duration-500">
+              <svg className="w-24 h-24" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+           </div>
+           
+           <div className="relative z-10">
+              <div className="inline-flex items-center gap-2 bg-indigo-500/20 border border-indigo-500/30 px-3 py-1 rounded-full mb-4">
+                 <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
+                 <span className="text-[9px] font-bold uppercase tracking-widest text-indigo-300">Faturamento Previsto</span>
+              </div>
+              
+              <p className={`${getFontSize(financialStats.totalMRR)} font-black transition-all tracking-tight`}>
+                {formatCurrency(financialStats.totalMRR)}
+              </p>
+              
+              <div className="flex items-center gap-2 mt-4 text-[10px] font-bold text-slate-400">
+                <span>+{financialStats.growth.toFixed(0)}% vs anterior</span>
+              </div>
+           </div>
         </div>
+
         {/* CARD RECEBIDO - COR VERDE (EMERALD) */}
         <div className="bg-emerald-500 p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-xl shadow-emerald-100 text-white transform hover:scale-[1.01] transition-transform">
           <p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-80">Recebido (Caixa)</p>
@@ -170,6 +185,7 @@ const Dashboard: React.FC<DashboardProps> = ({ clients, logs, onQuickAdd }) => {
           </p>
           <p className="text-[10px] font-bold mt-4 opacity-80">{financialStats.paidList.length} pagamentos confirmados</p>
         </div>
+
         <div className="bg-white p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-slate-200 shadow-sm">
           <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Pendente / Aberto</p>
           <p className={`${getFontSize(financialStats.totalMRR - financialStats.paidValue)} font-black text-slate-900 mt-2 transition-all tracking-tight`}>
@@ -177,6 +193,7 @@ const Dashboard: React.FC<DashboardProps> = ({ clients, logs, onQuickAdd }) => {
           </p>
           <p className="text-[10px] font-black text-amber-500 mt-4 uppercase tracking-tighter">Aguardando {financialStats.pendingList.length} transações</p>
         </div>
+
         <div className="bg-white p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-slate-200 shadow-sm">
           <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Ticket Médio</p>
           <p className={`${getFontSize(financialStats.ticketMedio)} font-black text-slate-900 mt-2 transition-all tracking-tight`}>
