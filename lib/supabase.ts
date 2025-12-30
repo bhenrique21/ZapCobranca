@@ -163,6 +163,7 @@ export const db = {
 
   async saveClient(client: Client) {
     // Usado PRINCIPALMENTE PARA INSERT (Novos Clientes)
+    // Mudamos de upsert para insert para evitar conflitos de permissão de UPDATE em IDs novos
     const payload = {
       id: client.id,
       user_id: client.userId, 
@@ -174,7 +175,7 @@ export const db = {
       custom_message: client.customMessage || null,
       auto_send: !!client.autoSend
     };
-    return await supabase.from('clients').upsert(payload);
+    return await supabase.from('clients').insert(payload);
   },
 
   async updateClient(clientId: string, updates: Partial<Client>) {

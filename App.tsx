@@ -182,7 +182,8 @@ const App: React.FC = () => {
     
     if (error) {
         console.error("Erro ao salvar cliente no DB:", error);
-        alert("Falha ao salvar o cliente no servidor. Verifique se você rodou o script SQL no Supabase.");
+        // Exibe o erro real vindo do banco
+        alert(`Erro ao salvar: ${error.message || 'Falha de conexão'}. Verifique o console.`);
         // Reverter estado se falhar
         setClients(previousClients);
         localStorage.setItem(CACHE_KEY_CLIENTS, JSON.stringify(previousClients));
