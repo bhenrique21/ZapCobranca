@@ -15,7 +15,6 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ children, activeView, setView, user, onLogout, daysRemaining, isExpired, isTrial }) => {
-  // Ocultar layout para telas de marketing e auth
   if (activeView === 'AUTH' || activeView === 'LANDING') return <>{children}</>;
 
   const navItems = [
@@ -29,7 +28,6 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, setView, user, on
 
   return (
     <div className="flex min-h-screen bg-slate-50">
-      {/* Sidebar */}
       <aside className="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col sticky top-0 h-screen">
         <div className="p-6">
           <h1 className="text-2xl font-bold text-indigo-600 flex items-center gap-2">
@@ -56,8 +54,8 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, setView, user, on
         </nav>
 
         {showStatusWarning && (
-           <div className={`mx-4 mb-4 p-4 rounded-2xl border ${isExpired ? 'bg-red-50 border-red-100' : 'bg-amber-50 border-amber-100'}`}>
-              <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${isExpired ? 'text-red-600' : 'text-amber-600'}`}>
+           <div className={`mx-4 mb-4 p-4 rounded-2xl border ${isExpired ? 'bg-red-50 border-red-100' : 'bg-indigo-50 border-indigo-100'}`}>
+              <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${isExpired ? 'text-red-600' : 'text-indigo-600'}`}>
                 {isExpired ? (isTrial ? 'Teste Expirado' : 'Assinatura Vencida') : (isTrial ? 'Período de Teste' : 'Assinatura Ativa')}
               </p>
               <p className="text-xs font-semibold text-slate-700 leading-tight">
@@ -82,7 +80,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, setView, user, on
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight mb-1">
                 Plano {user?.plan || 'Starter'}
               </p>
-              <p className={`text-[10px] font-black uppercase ${(!isExpired && user?.subscriptionActive) ? 'text-emerald-500' : 'text-amber-500'}`}>
+              <p className={`text-[10px] font-black uppercase ${(!isExpired && user?.subscriptionActive) ? 'text-indigo-500' : 'text-amber-500'}`}>
                 {isExpired ? 'Expirado' : `${daysRemaining} dias restantes`}
               </p>
             </div>
@@ -97,7 +95,6 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, setView, user, on
         </div>
       </aside>
 
-      {/* Main Content */}
       <main className="flex-1 overflow-auto">
         <header className="md:hidden bg-white border-b border-slate-200 p-4 flex items-center justify-between sticky top-0 z-10">
           <div className="flex items-center gap-2">
@@ -107,7 +104,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, setView, user, on
           <div className="flex items-center gap-3">
              <div className="text-right">
                 <p className="text-[10px] font-bold text-slate-900 leading-none">{user?.name?.split(' ')[0]}</p>
-                <p className={`text-[9px] font-bold uppercase ${isExpired ? 'text-red-500' : 'text-amber-500'}`}>{isExpired ? 'Exp' : `${daysRemaining}d`}</p>
+                <p className={`text-[9px] font-bold uppercase ${isExpired ? 'text-red-500' : 'text-indigo-500'}`}>{isExpired ? 'Exp' : `${daysRemaining}d`}</p>
              </div>
              <button onClick={onLogout} className="p-2 text-slate-400"><Icons.Logout /></button>
           </div>
@@ -117,7 +114,6 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, setView, user, on
           {children}
         </div>
 
-        {/* Mobile Bottom Nav */}
         <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-4 py-2 flex justify-around items-center z-20 shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
           {navItems.map((item) => (
             <button

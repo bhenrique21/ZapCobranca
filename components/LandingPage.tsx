@@ -1,11 +1,32 @@
 
 import React from 'react';
 import { PLANS } from '../constants';
+import Dashboard from './Dashboard';
+import { Client, PaymentStatus } from '../types';
 
 interface LandingPageProps {
   onGetStarted: () => void;
   onLogin: () => void;
 }
+
+// Dados fictícios para o preview ficar bonito e preenchido
+const MOCK_CLIENTS: Client[] = Array.from({ length: 12 }).map((_, i) => {
+  const date = new Date();
+  date.setMonth(date.getMonth() - (i % 5)); // Distribui clientes nos últimos 5 meses
+  
+  return {
+    id: `mock-${i}`,
+    userId: 'mock',
+    name: ['Empresa ABC', 'Tech Solutions', 'Studio Design', 'Consultoria Beta', 'Marketing Digital', 'Dev House'][i % 6],
+    whatsapp: '11999999999',
+    monthlyValue: 800 + (i * 250), // Valores variados
+    dueDay: 10,
+    status: i < 8 ? PaymentStatus.PAID : i < 10 ? PaymentStatus.PENDING : PaymentStatus.OVERDUE,
+    createdAt: date.toISOString(),
+    customMessage: '',
+    autoSend: false
+  };
+});
 
 const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
   return (
@@ -32,23 +53,23 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
       {/* Hero Section */}
       <section className="pt-32 md:pt-48 pb-12 md:pb-24 px-4 md:px-6 relative">
         <div className="max-w-7xl mx-auto flex flex-col items-center text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 rounded-full mb-6 md:mb-8 animate-in fade-in slide-in-from-top-4 duration-700">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 rounded-full mb-6 md:mb-8">
             <span className="flex h-2 w-2 rounded-full bg-indigo-600 animate-pulse"></span>
             <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-indigo-600 text-center">Gestão B2B para Profissionais</span>
           </div>
           
-          <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black text-slate-900 leading-[1.1] tracking-tighter max-w-5xl animate-in fade-in slide-in-from-bottom-6 duration-1000 px-2">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black text-slate-900 leading-[1.1] tracking-tighter max-w-5xl px-2">
             Organize seus clientes em um só lugar, de forma <span className="text-indigo-600">prática, rápida e profissional.</span>
           </h1>
           
-          <p className="mt-6 md:mt-8 text-base md:text-xl text-slate-500 max-w-3xl font-medium leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200 px-4">
+          <p className="mt-6 md:mt-8 text-base md:text-xl text-slate-500 max-w-3xl font-medium leading-relaxed px-4">
             Tenha acesso a um Dashboard completo para acompanhar e mensurar seus pagamentos mensais sem planilhas confusas.
           </p>
 
-          <div className="mt-8 md:mt-12 flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto px-4 animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-300">
+          <div className="mt-8 md:mt-12 flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto px-4">
             <button 
               onClick={onGetStarted}
-              className="w-full sm:w-auto px-10 md:px-12 py-4 md:py-5 bg-indigo-600 text-white font-black rounded-2xl hover:bg-indigo-700 transition-all hover:scale-105 active:scale-95 shadow-2xl shadow-indigo-200"
+              className="w-full sm:w-auto px-10 md:px-12 py-4 md:py-5 bg-indigo-600 text-white font-black rounded-2xl hover:bg-indigo-700 transition-all shadow-2xl shadow-indigo-100"
             >
               Criar Conta Gratuita
             </button>
@@ -60,28 +81,36 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
             </button>
           </div>
 
-          {/* Dashboard Preview Image - Atualizada com a captura real do sistema */}
-          <div className="mt-16 md:mt-24 w-full max-w-5xl relative animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-500 px-2 sm:px-6">
-            <div className="absolute inset-0 bg-indigo-600/10 md:bg-indigo-600/20 blur-[60px] md:blur-[120px] rounded-full -z-10 transform -translate-y-1/2"></div>
+          {/* Preview do Dashboard (Componente Real) */}
+          <div className="mt-16 md:mt-20 w-full max-w-6xl px-2 sm:px-4">
             <div className="relative group">
-               <div className="absolute -inset-1.5 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-indigo-500/20 rounded-[2.2rem] md:rounded-[3.2rem] opacity-30 group-hover:opacity-50 transition duration-1000 blur-xl"></div>
-               <div className="relative overflow-hidden rounded-[2rem] md:rounded-[3rem] border-8 border-white shadow-2xl">
-                 <img 
-                   src="https://r2.erweima.ai/i/157S76eRToK5E_3l_rX2Zg.png" 
-                   alt="Dashboard ZapCobrança Real"
-                   className="w-full h-auto object-cover transform transition-transform duration-700 group-hover:scale-[1.02]"
-                 />
+               {/* Efeito de Glow */}
+               <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-[2.5rem] blur-2xl opacity-50 group-hover:opacity-75 transition duration-1000"></div>
+               
+               {/* Container do Dashboard - Pointer Events None para evitar interação */}
+               <div className="relative bg-slate-50 rounded-[2rem] border-[6px] md:border-[10px] border-white shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] overflow-hidden pointer-events-none select-none p-4 md:p-8 transform transition-transform duration-700 hover:scale-[1.01]">
+                 {/* Camada transparente para garantir que nada seja clicável */}
+                 <div className="absolute inset-0 z-20"></div>
+                 
+                 {/* Renderização do Componente Real */}
+                 <div className="opacity-90 grayscale-[10%] hover:grayscale-0 transition-all duration-700">
+                    <Dashboard 
+                      clients={MOCK_CLIENTS} 
+                      logs={[]} 
+                      onQuickAdd={() => {}} 
+                    />
+                 </div>
                </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Trust Message Section (Aesthetic Overhaul) */}
+      {/* Trust Message Section */}
       <section className="py-24 md:py-32 bg-slate-50 border-y border-slate-100">
         <div className="max-w-5xl mx-auto px-6 text-center">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-emerald-100/80 rounded-[2rem] text-emerald-600 mb-10 shadow-inner relative">
-            <div className="absolute inset-0 bg-emerald-400/20 blur-xl rounded-full animate-pulse"></div>
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-indigo-100 rounded-[2rem] text-indigo-600 mb-10 shadow-inner relative">
+            <div className="absolute inset-0 bg-indigo-400/20 blur-xl rounded-full animate-pulse"></div>
             <svg className="w-10 h-10 relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -93,11 +122,11 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
           
           <div className="space-y-8">
             <p className="text-xl md:text-3xl text-slate-600 font-bold leading-tight max-w-4xl mx-auto">
-              O dinheiro cai <span className="text-emerald-500 font-black">direto na sua conta</span>, sem intermediários.<br />
+              O dinheiro cai <span className="text-indigo-600 font-black">direto na sua conta</span>, sem intermediários.<br />
               Nós não mexemos no seu pagamento!
             </p>
             
-            <div className="w-12 h-1 bg-indigo-100 mx-auto rounded-full"></div>
+            <div className="w-12 h-1 bg-indigo-200 mx-auto rounded-full"></div>
             
             <p className="text-xs md:text-sm text-slate-400 font-black uppercase tracking-[0.25em] max-w-2xl mx-auto leading-relaxed opacity-80">
               Nossa ferramenta apenas organiza seus clientes em um só lugar, de forma simples e prática.
@@ -111,12 +140,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
             {[
-              { t: 'WhatsApp', d: 'Lembretes amigáveis e cobranças diretas sem atrito, na palma da mão.', i: 'M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z', c: 'indigo' },
-              { t: 'Pix e Link', d: 'Sua chave Pix e links de pagamento sem intermediários ou taxas abusivas.', i: 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z', c: 'emerald' },
-              { t: 'Gestão MRR', d: 'Acompanhe seu faturamento recorrente e saiba quem já pagou em segundos.', i: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z', c: 'slate' }
+              { t: 'WhatsApp', d: 'Lembretes amigáveis e cobranças diretas sem atrito, na palma da mão.', i: 'M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z' },
+              { t: 'Pix e Link', d: 'Sua chave Pix e links de pagamento sem intermediários ou taxas abusivas.', i: 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z' },
+              { t: 'Gestão MRR', d: 'Acompanhe seu faturamento recorrente e saiba quem já pagou em segundos.', i: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z' }
             ].map((f, idx) => (
               <div key={idx} className="p-8 md:p-10 bg-white rounded-[2rem] md:rounded-[3rem] border border-slate-100 hover:shadow-2xl hover:shadow-indigo-100 transition-all group">
-                <div className={`w-12 h-12 md:w-16 md:h-16 bg-${f.c}-50 rounded-2xl flex items-center justify-center text-${f.c === 'slate' ? 'slate-900' : f.c + '-600'} mb-6 md:mb-8 group-hover:scale-110 transition-transform`}>
+                <div className={`w-12 h-12 md:w-16 md:h-16 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 mb-6 md:mb-8 group-hover:scale-110 transition-transform`}>
                   <svg className="w-6 h-6 md:w-8 md:h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d={f.i} /></svg>
                 </div>
                 <h3 className="text-xl md:text-2xl font-black mb-4">{f.t}</h3>
@@ -133,7 +162,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
           <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight mb-4">Planos Transparentes</h2>
           <p className="text-slate-500 font-medium mb-12 md:mb-16">Escolha o plano ideal para a sua estrutura atual.</p>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-sm md:max-w-none mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mx-auto">
             {(Object.keys(PLANS) as Array<keyof typeof PLANS>).map((key) => {
               const plan = PLANS[key];
               return (

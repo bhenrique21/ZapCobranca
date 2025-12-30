@@ -32,16 +32,13 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdateUser }) => {
   };
 
   const runDiagnostics = async () => {
-    console.log("Botão 'Executar Testes' clicado.");
     setDiagLoading(true);
     setDiagResults({ database: null, edgeFunction: null, mercadoPago: null, details: 'Iniciando testes...' });
     
     try {
       const results = await db.testIntegration();
-      console.log("Resultado final do diagnóstico:", results);
       setDiagResults(results);
     } catch (err: any) {
-      console.error("Erro ao rodar diagnóstico no componente:", err);
       setDiagResults(prev => ({ ...prev, details: "Erro de execução: " + err.message }));
     } finally {
       setDiagLoading(false);
@@ -78,7 +75,7 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdateUser }) => {
         </div>
         
         {showToast && (
-          <div className="bg-emerald-500 text-white px-5 py-2.5 rounded-2xl text-sm font-black animate-in fade-in slide-in-from-right-4 shadow-lg shadow-emerald-100">
+          <div className="bg-indigo-600 text-white px-5 py-2.5 rounded-2xl text-sm font-black animate-in fade-in slide-in-from-right-4 shadow-lg shadow-indigo-100">
             ✓ Informações salvas com sucesso!
           </div>
         )}
@@ -91,7 +88,7 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdateUser }) => {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Card de Diagnóstico (Destaque para teste) */}
+        {/* Card de Diagnóstico */}
         <div className="bg-slate-900 text-white p-6 md:p-8 rounded-[2.5rem] shadow-2xl space-y-6 overflow-hidden relative">
           <div className="absolute top-0 right-0 p-8 opacity-10">
             <svg className="w-24 h-24" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
@@ -130,7 +127,7 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdateUser }) => {
                 {diagResults[item.key as keyof typeof diagResults] === null ? (
                   <div className="w-3 h-3 rounded-full bg-slate-700 animate-pulse"></div>
                 ) : diagResults[item.key as keyof typeof diagResults] ? (
-                  <div className="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.8)]"></div>
+                  <div className="w-3 h-3 rounded-full bg-indigo-500 shadow-[0_0_12px_rgba(99,102,241,0.8)]"></div>
                 ) : (
                   <div className="w-3 h-3 rounded-full bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.8)]"></div>
                 )}
@@ -180,25 +177,25 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdateUser }) => {
           </div>
         </div>
 
-        {/* Card: Integração Automática (NOVO) */}
+        {/* Card: Integração Automação */}
         <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-6 md:p-8 rounded-[2rem] shadow-xl space-y-6 relative overflow-hidden text-white">
           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
           
-          <div className="flex items-center gap-3 text-emerald-400 mb-2 relative z-10">
-            <div className="p-2 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+          <div className="flex items-center gap-3 text-indigo-400 mb-2 relative z-10">
+            <div className="p-2 bg-indigo-500/10 rounded-lg border border-indigo-500/20">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </div>
             <div>
               <h3 className="text-lg font-bold text-white">Automação WhatsApp (API)</h3>
-              <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-500 text-slate-900 px-2 py-0.5 rounded ml-2">Beta</span>
+              <span className="text-[10px] font-black uppercase tracking-wider bg-indigo-500 text-white px-2 py-0.5 rounded ml-2">Beta</span>
             </div>
           </div>
           
           <div className="relative z-10 space-y-4">
             <p className="text-xs text-slate-400 leading-relaxed max-w-2xl">
-              Para que o sistema envie mensagens sozinho (sem você clicar), é necessário conectar um Gateway externo (como <strong>Evolution API</strong>, <strong>Z-API</strong> ou similar). Se deixar em branco, o envio continuará sendo manual via clique.
+              Para que o sistema envie mensagens sozinho, é necessário conectar um Gateway externo. Se deixar em branco, o envio continuará sendo manual via clique.
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -208,7 +205,7 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdateUser }) => {
                   type="url"
                   value={localUser.gatewayUrl || ''}
                   onChange={(e) => handleInputChange('gatewayUrl', e.target.value)}
-                  className="w-full px-5 py-3.5 bg-slate-800/50 border border-slate-700 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none font-medium placeholder-slate-600 text-white"
+                  className="w-full px-5 py-3.5 bg-slate-800/50 border border-slate-700 rounded-2xl focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none font-medium placeholder-slate-600 text-white"
                   placeholder="https://api.exemplo.com/message/send"
                 />
               </div>
@@ -218,7 +215,7 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdateUser }) => {
                   type="password"
                   value={localUser.gatewayApiKey || ''}
                   onChange={(e) => handleInputChange('gatewayApiKey', e.target.value)}
-                  className="w-full px-5 py-3.5 bg-slate-800/50 border border-slate-700 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none font-medium placeholder-slate-600 text-white"
+                  className="w-full px-5 py-3.5 bg-slate-800/50 border border-slate-700 rounded-2xl focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none font-medium placeholder-slate-600 text-white"
                   placeholder="Ex: Bearer eyJhbGci..."
                 />
               </div>
@@ -228,8 +225,8 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdateUser }) => {
 
         {/* Card: Dados de Recebimento */}
         <div className="bg-white p-6 md:p-8 rounded-[2rem] border border-slate-200 shadow-sm space-y-6">
-          <div className="flex items-center gap-3 text-emerald-600 mb-2">
-            <div className="p-2 bg-emerald-50 rounded-lg">
+          <div className="flex items-center gap-3 text-indigo-600 mb-2">
+            <div className="p-2 bg-indigo-50 rounded-lg">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
@@ -244,7 +241,7 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdateUser }) => {
                 type="text"
                 value={localUser.pixKey}
                 onChange={(e) => handleInputChange('pixKey', e.target.value)}
-                className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-emerald-50 focus:border-emerald-500 transition-all outline-none font-bold"
+                className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 transition-all outline-none font-bold"
                 placeholder="CPF, CNPJ, E-mail ou Celular"
               />
             </div>
@@ -254,7 +251,7 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdateUser }) => {
                 type="url"
                 value={localUser.paymentLink || ''}
                 onChange={(e) => handleInputChange('paymentLink', e.target.value)}
-                className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-emerald-50 focus:border-emerald-500 transition-all outline-none font-bold"
+                className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 transition-all outline-none font-bold"
                 placeholder="Ex: Mercado Pago, Stripe, etc."
               />
             </div>

@@ -71,7 +71,7 @@ const App: React.FC = () => {
 
   const pollPaymentStatus = useCallback(async (userId: string) => {
     let attempts = 0;
-    const maxAttempts = 24; // 2 minutos (5s * 24)
+    const maxAttempts = 24; 
     const interval = setInterval(async () => {
       attempts++;
       const found = await checkPaymentOnce(userId);
@@ -86,7 +86,6 @@ const App: React.FC = () => {
     return () => clearInterval(interval);
   }, [checkPaymentOnce]);
 
-  // Monitora retorno de compra
   useEffect(() => {
     const pending = localStorage.getItem('zapcobranca_pending_plan');
     if (pending && user && !user.subscriptionActive) {
@@ -122,7 +121,6 @@ const App: React.FC = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         await loadUserData(session.user.id, session.user.email, session.user.user_metadata?.full_name);
-        // Se já está logado, pula a landing e vai para dashboard
         if (viewRef.current === 'AUTH' || viewRef.current === 'LANDING') setActiveView('DASHBOARD');
       } else {
         setIsLoading(false);
@@ -140,7 +138,6 @@ const App: React.FC = () => {
         setClients([]);
         localStorage.removeItem(CACHE_KEY_USER);
         localStorage.removeItem(CACHE_KEY_CLIENTS);
-        // Só redireciona para a landing se não estiver tentando logar
         if (viewRef.current !== 'AUTH') setActiveView('LANDING');
         setIsLoading(false);
       }
@@ -258,7 +255,7 @@ const App: React.FC = () => {
                   <button 
                     onClick={() => handleSubscribe(key as PlanType)}
                     disabled={isProcessing || (isCurrent && user?.subscriptionActive)}
-                    className={`w-full py-5 rounded-2xl font-black transition-all active:scale-95 ${isCurrent && user?.subscriptionActive ? 'bg-emerald-50 text-emerald-600 cursor-default' : 'bg-slate-900 text-white hover:bg-slate-800 shadow-lg'}`}
+                    className={`w-full py-5 rounded-2xl font-black transition-all active:scale-95 ${isCurrent && user?.subscriptionActive ? 'bg-indigo-50 text-indigo-700 cursor-default' : 'bg-slate-900 text-white hover:bg-slate-800 shadow-lg'}`}
                   >
                     {isProcessing ? 'Abrindo Checkout...' : (isCurrent && user?.subscriptionActive) ? 'Plano Ativo' : 'Assinar Agora'}
                   </button>

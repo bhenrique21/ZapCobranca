@@ -117,7 +117,7 @@ const Dashboard: React.FC<DashboardProps> = ({ clients, logs, onQuickAdd }) => {
         </div>
       </div>
 
-      {/* Grid de Métricas Adaptativo */}
+      {/* Grid de Métricas Adaptativo - Corrigido para Indigo */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         <div className="bg-indigo-600 p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-xl shadow-indigo-100 text-white transform hover:scale-[1.01] transition-transform">
           <p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-80">MRR Total</p>
@@ -126,7 +126,7 @@ const Dashboard: React.FC<DashboardProps> = ({ clients, logs, onQuickAdd }) => {
             <span>+{financialStats.growth.toFixed(0)}% vs anterior</span>
           </div>
         </div>
-        <div className="bg-emerald-500 p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-xl shadow-emerald-100 text-white transform hover:scale-[1.01] transition-transform">
+        <div className="bg-indigo-500 p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-xl shadow-indigo-100 text-white transform hover:scale-[1.01] transition-transform">
           <p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-80">Recebido</p>
           <p className="text-2xl md:text-4xl font-black mt-2">{formatCurrency(financialStats.paidValue)}</p>
           <p className="text-[10px] font-bold mt-4 opacity-80">{financialStats.paidList.length} clientes ativos pagos</p>
@@ -146,7 +146,7 @@ const Dashboard: React.FC<DashboardProps> = ({ clients, logs, onQuickAdd }) => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
-        {/* Gráfico de Evolução */}
+        {/* Gráfico de Evolução - Corrigido para Indigo */}
         <div className="lg:col-span-2 bg-white p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] border border-slate-200 shadow-sm min-h-[400px] md:h-[480px] relative">
           <div className="flex items-center justify-between mb-6 md:mb-8">
             <div>
@@ -189,7 +189,7 @@ const Dashboard: React.FC<DashboardProps> = ({ clients, logs, onQuickAdd }) => {
                   iconType="circle"
                   wrapperStyle={{ paddingBottom: '20px', fontSize: '10px', fontWeight: 'bold', color: '#64748b' }}
                 />
-                <Bar name="Realizado" dataKey="pago" stackId="a" fill="#10b981" barSize={30} />
+                <Bar name="Realizado" dataKey="pago" stackId="a" fill="#4f46e5" barSize={30} />
                 <Bar name="Em Aberto" dataKey="pendente" stackId="a" fill="#f87171" radius={[8, 8, 0, 0]} barSize={30} />
               </BarChart>
             </ResponsiveContainer>
@@ -238,13 +238,13 @@ const Dashboard: React.FC<DashboardProps> = ({ clients, logs, onQuickAdd }) => {
             {financialStats.paidList.length > 0 && (
               <div className="space-y-3 border-t border-slate-50 pt-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-50 px-2 py-0.5 rounded-full">Pagos</span>
-                  <span className="text-[9px] font-black text-emerald-500">{financialStats.paidList.length}</span>
+                  <span className="text-[9px] font-black text-indigo-500 uppercase tracking-widest bg-indigo-50 px-2 py-0.5 rounded-full">Pagos</span>
+                  <span className="text-[9px] font-black text-indigo-500">{financialStats.paidList.length}</span>
                 </div>
                 {financialStats.paidList.map(c => (
                   <div key={c.id} className="flex justify-between items-center text-xs opacity-60">
                     <span className="font-bold text-slate-700 truncate max-w-[120px]">{c.name}</span>
-                    <span className="font-black text-emerald-600">{formatCurrency(c.monthlyValue)}</span>
+                    <span className="font-black text-indigo-600">{formatCurrency(c.monthlyValue)}</span>
                   </div>
                 ))}
               </div>
