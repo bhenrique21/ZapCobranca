@@ -2,19 +2,19 @@
 // Este código deve ser implantado no Supabase como uma Edge Function
 // Nome da função: mercado-pago-webhook
 
+declare const Deno: any;
+
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const MP_ACCESS_TOKEN = "APP_USR-8375343003401062-122919-43e3e14d0d4be5820a1a751993c2b7e8-493705015";
 
-// Cabeçalhos CORS para permitir que o frontend chame a função
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
 };
 
 Deno.serve(async (req: Request) => {
-  // 1. Trata requisições OPTIONS (Pre-flight)
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
@@ -36,16 +36,20 @@ Deno.serve(async (req: Request) => {
         const mpRes = await fetch('https://api.mercadopago.com/v1/payment_methods', {
           headers: { Authorization: `Bearer ${MP_ACCESS_TOKEN}` }
         });
-        if (mpRes.ok) mpStatus = 'OK';
-        else details = `Erro MP: ${mpRes.status}`;
+        if (mpRes.ok) {
+          mpStatus = 'OK';
+          details = "Conexão com Mercado Pago estabelecida com sucesso!";
+        } else {
+          details = `Erro Mercado Pago: Token inválido ou sem permissão (${mpRes.status}).`;
+        }
       } catch (e) {
-        details = `Erro Conexão MP: ${e.message}`;
+        details = `Erro de Conexão: O servidor não conseguiu falar com o Mercado Pago.`;
       }
 
       return new Response(JSON.stringify({ 
         status: "alive", 
         mp_status: mpStatus,
-        details: details || "Tudo configurado corretamente (CORS OK)."
+        details: details
       }), { 
         status: 200, 
         headers: { ...corsHeaders, "Content-Type": "application/json" } 
@@ -54,14 +58,16 @@ Deno.serve(async (req: Request) => {
 
     // --- AÇÃO: CRIAR CHECKOUT ---
     if (body.action === 'create_preference') {
-      const { plan, userId, email } = body;
+      const { plan, userId, email, origin } = body;
       
+      // Se não vier um origin (fallback), usamos o domínio principal
+      const redirectUrl = origin || 'https://zapcobranca.vercel.app';
+
       const PLANS_CONFIG: any = {
         'STARTER': { price: 39.90, name: 'Plano Starter - ZapCobrança' },
         'PRO': { price: 59.90, name: 'Plano Pro - ZapCobrança' },
         'ADVANCED': { price: 99.90, name: 'Plano Avançado - ZapCobrança' }
       };
-      
       const config = PLANS_CONFIG[plan] || PLANS_CONFIG.STARTER;
 
       const preferenceBody = {
@@ -73,11 +79,11 @@ Deno.serve(async (req: Request) => {
         }],
         payer: { email: email },
         external_reference: userId,
-        notification_url: `https://vgvwlmomdwvzoxlflaix.supabase.co/functions/v1/mercado-pago-webhook`,
+        notification_url: `${SUPABASE_URL}/functions/v1/mercado-pago-webhook`,
         back_urls: {
-          success: `https://zapcobranca.vercel.app`, 
-          pending: `https://zapcobranca.vercel.app`,
-          failure: `https://zapcobranca.vercel.app`
+          success: redirectUrl, 
+          pending: redirectUrl,
+          failure: redirectUrl
         },
         auto_return: 'approved'
       };
@@ -98,11 +104,9 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // --- LÓGICA: WEBHOOK (RECEBIMENTO) ---
+    // --- WEBHOOK ---
     const paymentId = body.data?.id || body.id || searchParams.get("data.id") || searchParams.get("id");
-    const type = body.type || searchParams.get("type");
-
-    if (paymentId && (type === "payment" || !type)) {
+    if (paymentId) {
       const mpResponse = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
         headers: { Authorization: `Bearer ${MP_ACCESS_TOKEN}` }
       });

@@ -15,21 +15,9 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   }
 });
 
-async function withRetry<T>(fn: () => Promise<T>, retries = 3, delay = 1000): Promise<T> {
-  try {
-    return await fn();
-  } catch (err: any) {
-    if (retries > 0 && (err.message?.includes('fetch') || err.status === 429)) {
-      await new Promise(resolve => setTimeout(resolve, delay));
-      return withRetry(fn, retries - 1, delay * 1.5);
-    }
-    throw err;
-  }
-}
-
 export const db = {
   async testIntegration() {
-    console.log("[Diag] Iniciando testes de conectividade...");
+    console.log("[Diagnostic] Iniciando sequência de testes...");
     const results = {
       database: false,
       edgeFunction: false,
@@ -39,74 +27,60 @@ export const db = {
 
     try {
       // 1. Teste de Banco de Dados
-      console.log("[Diag] Testando Banco de Dados...");
-      const { data: dbData, error: dbError } = await supabase.from('profiles').select('id').limit(1);
+      const { error: dbError } = await supabase.from('profiles').select('id').limit(1);
       results.database = !dbError;
-      if (dbError) console.error("[Diag] Erro DB:", dbError);
+      if (dbError) console.error("[Diagnostic] Erro no Banco:", dbError);
 
-      // 2. Teste de Edge Function
-      console.log("[Diag] Chamando Edge Function...");
-      const { data: edgeData, error: edgeError } = await supabase.functions.invoke('mercado-pago-webhook', {
-        body: { action: 'test_config' }
+      // 2. Teste de Edge Function (Chamada Direta via Fetch para ignorar bugs de SDK)
+      console.log("[Diagnostic] Testando Edge Function em: " + SUPABASE_URL + "/functions/v1/mercado-pago-webhook");
+      
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/mercado-pago-webhook`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'test_config' })
+      }).catch(err => {
+        console.error("[Diagnostic] Falha de fetch:", err);
+        return null;
       });
 
-      if (edgeError) {
-        console.error("[Diag] Erro Edge Function:", edgeError);
-        results.edgeFunction = false;
-        results.details = edgeError.message.includes('404') 
-          ? "Função 'mercado-pago-webhook' não encontrada. Verifique se você fez o 'supabase functions deploy'."
-          : edgeError.message;
-      } else {
+      if (!response) {
+        results.details = "Erro de Rede: Não foi possível alcançar a Edge Function. Verifique sua conexão ou se o AdBlock está ligado.";
+      } else if (response.status === 404) {
+        results.details = "Erro 404: A função 'mercado-pago-webhook' não foi encontrada no Supabase. Você precisa rodar: 'supabase functions deploy mercado-pago-webhook' no seu terminal.";
+      } else if (response.status === 200) {
+        const data = await response.json();
         results.edgeFunction = true;
-        results.mercadoPago = edgeData?.mp_status === 'OK';
-        results.details = edgeData?.details || "Conexão com Edge Function OK.";
-        console.log("[Diag] Sucesso Edge Function:", edgeData);
+        results.mercadoPago = data?.mp_status === 'OK';
+        results.details = data?.details || "Tudo funcionando perfeitamente!";
+      } else {
+        results.details = `Erro Inesperado (${response.status}): Verifique os logs no painel do Supabase.`;
       }
 
       return results;
     } catch (err: any) {
-      console.error("[Diag] Erro Fatal no teste:", err);
-      return {
-        ...results,
-        details: "Erro crítico: " + err.message
-      };
+      results.details = "Erro crítico na execução do teste: " + err.message;
+      return results;
     }
   },
 
   async getProfile(userId: string): Promise<User | null> {
     if (!userId) return null;
-    try {
-      return await withRetry(async () => {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', userId)
-          .maybeSingle();
-        
-        if (error) throw error;
-        return data ? this.mapProfile(data) : null;
-      });
-    } catch (err) {
-      console.error("[Database] Erro ao buscar perfil:", err);
-      return null;
-    }
+    const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
+    if (error) return null;
+    return data ? this.mapProfile(data) : null;
   },
 
   async ensureProfile(userId: string, email: string, name: string): Promise<void> {
-    try {
-      const { data: existing } = await supabase.from('profiles').select('id').eq('id', userId).maybeSingle();
-      if (!existing) {
-        await supabase.from('profiles').insert({
-          id: userId,
-          email: email,
-          name: name,
-          message_template: DEFAULT_TEMPLATE,
-          plan: 'STARTER',
-          subscription_active: false
-        });
-      }
-    } catch (err) {
-      console.warn("[Database] Ignorando falha silenciosa no ensureProfile");
+    const { data: existing } = await supabase.from('profiles').select('id').eq('id', userId).maybeSingle();
+    if (!existing) {
+      await supabase.from('profiles').insert({
+        id: userId,
+        email: email,
+        name: name,
+        message_template: DEFAULT_TEMPLATE,
+        plan: 'STARTER',
+        subscription_active: false
+      });
     }
   },
 
@@ -127,27 +101,20 @@ export const db = {
   },
 
   async updateProfile(userId: string, updates: Partial<User>) {
-    try {
-      const dbData: any = {};
-      if (updates.name !== undefined) dbData.name = updates.name;
-      if (updates.whatsapp !== undefined) dbData.whatsapp = updates.whatsapp;
-      if (updates.pixKey !== undefined) dbData.pix_key = updates.pixKey;
-      if (updates.paymentLink !== undefined) dbData.payment_link = updates.paymentLink;
-      if (updates.messageTemplate !== undefined) dbData.message_template = updates.messageTemplate;
-      if (updates.subscriptionActive !== undefined) dbData.subscription_active = updates.subscriptionActive;
-      if (updates.plan !== undefined) dbData.plan = updates.plan;
-      if (updates.subscriptionExpiresAt !== undefined) dbData.subscription_expires_at = updates.subscriptionExpiresAt;
+    const dbData: any = {};
+    if (updates.name !== undefined) dbData.name = updates.name;
+    if (updates.whatsapp !== undefined) dbData.whatsapp = updates.whatsapp;
+    if (updates.pixKey !== undefined) dbData.pix_key = updates.pixKey;
+    if (updates.paymentLink !== undefined) dbData.payment_link = updates.paymentLink;
+    if (updates.messageTemplate !== undefined) dbData.message_template = updates.messageTemplate;
+    if (updates.subscriptionActive !== undefined) dbData.subscription_active = updates.subscriptionActive;
+    if (updates.plan !== undefined) dbData.plan = updates.plan;
+    if (updates.subscriptionExpiresAt !== undefined) dbData.subscription_expires_at = updates.subscriptionExpiresAt;
 
-      const { error } = await supabase.from('profiles').update(dbData).eq('id', userId);
-      if (error) throw error;
-      return { success: true };
-    } catch (err: any) {
-      return { error: err.message };
-    }
+    return await supabase.from('profiles').update(dbData).eq('id', userId);
   },
 
   async getClients(userId: string): Promise<Client[]> {
-    if (!userId) return [];
     const { data, error } = await supabase.from('clients').select('*').eq('user_id', userId).order('created_at', { ascending: false });
     if (error) return [];
     return (data || []).map(c => ({

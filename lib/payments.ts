@@ -7,16 +7,20 @@ export const payments = {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) throw new Error("Usuário não autenticado");
 
-    console.log('Gerando checkout dinâmico para:', plan);
+    // Detecta dinamicamente a URL onde o app está rodando (importante para Vercel Preview)
+    const currentOrigin = window.location.origin;
+
+    console.log('Gerando checkout dinâmico para:', plan, 'com retorno para:', currentOrigin);
 
     try {
-      // Chamamos a Edge Function para criar a preferência de pagamento no Mercado Pago
+      // Chamamos a Edge Function passando a origem dinâmica
       const { data, error } = await supabase.functions.invoke('mercado-pago-webhook', {
         body: { 
           action: 'create_preference', 
           plan: plan.toUpperCase(),
           userId: session.user.id,
-          email: userEmail
+          email: userEmail,
+          origin: currentOrigin
         }
       });
 
@@ -27,7 +31,7 @@ export const payments = {
       // Salva o plano pretendido para monitoramento local
       localStorage.setItem('zapcobranca_pending_plan', plan.toUpperCase());
 
-      // Redireciona para o Checkout Pro do Mercado Pago
+      // Tenta abrir em nova aba, se falhar (bloqueio de popup), redireciona na mesma
       const checkoutUrl = data.init_point;
       const win = window.open(checkoutUrl, '_blank');
       
