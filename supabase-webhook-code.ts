@@ -52,9 +52,8 @@ serve(async (req) => {
             unit_price: selectedPlan.price
           }
         ],
-        payer: {
-          email: email
-        },
+        // REMOVIDO: payer: { email: email }
+        // Isso evita que o MP bloqueie se o email do app for o mesmo da conta MP (Auto-pagamento)
         external_reference: userId,
         auto_return: "approved",
         back_urls: {
