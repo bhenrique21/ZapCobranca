@@ -24,8 +24,19 @@ export const payments = {
         }
       });
 
-      if (error || !data?.init_point) {
-        throw new Error(data?.error || "Falha ao gerar link de pagamento");
+      if (error) {
+        console.error('Supabase Function Error:', error);
+        
+        // Verifica erro 404 (Função não encontrada/não deployada)
+        if (error.context?.status === 404 || error.message?.includes('not found')) {
+           throw new Error("A função de pagamento 'mercado-pago-webhook' não foi encontrada no servidor. É necessário fazer o deploy da Edge Function no Supabase.");
+        }
+        
+        throw new Error(error.message || "Erro de comunicação com a função de pagamento.");
+      }
+
+      if (!data?.init_point) {
+        throw new Error(data?.error || "O servidor não retornou o link de pagamento corretamente.");
       }
 
       // Salva o plano pretendido para monitoramento local
