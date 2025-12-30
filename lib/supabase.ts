@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { User, Client, MessageLog, PlanType, PaymentStatus } from '../types';
 import { DEFAULT_TEMPLATE } from '../constants';
 
-const SUPABASE_URL = 'https://vgvwlmomdwvzoxlflaix.supabase.co';
+export const SUPABASE_URL = 'https://vgvwlmomdwvzoxlflaix.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__M8OpRuAFQOfZRXTH-UQTg_TfzakYbv';
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {

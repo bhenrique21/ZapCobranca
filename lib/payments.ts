@@ -1,19 +1,16 @@
 
 import { PlanType } from '../types';
-import { supabase } from './supabase';
+import { supabase, SUPABASE_URL } from './supabase';
 
 export const payments = {
   async createCheckoutSession(plan: PlanType, userEmail: string) {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) throw new Error("Usuário não autenticado");
 
-    // Detecta dinamicamente a URL onde o app está rodando (importante para Vercel Preview)
     const currentOrigin = window.location.origin;
-
     console.log('Gerando checkout dinâmico para:', plan, 'com retorno para:', currentOrigin);
 
     try {
-      // Chamamos a Edge Function passando a origem dinâmica
       const { data, error } = await supabase.functions.invoke('mercado-pago-webhook', {
         body: { 
           action: 'create_preference', 
@@ -27,11 +24,19 @@ export const payments = {
       if (error) {
         console.error('Supabase Function Error:', error);
         
-        // Verifica erro 404 (Função não encontrada/não deployada)
-        if (error.context?.status === 404 || error.message?.includes('not found')) {
-           throw new Error("A função de pagamento 'mercado-pago-webhook' não foi encontrada no servidor. É necessário fazer o deploy da Edge Function no Supabase.");
+        // Se o SDK falhar, tentamos verificar manualmente se a função existe (404)
+        if (error.message === 'Failed to send a request to the Edge Function') {
+           try {
+              const check = await fetch(`${SUPABASE_URL}/functions/v1/mercado-pago-webhook`, { method: 'OPTIONS' });
+              if (check.status === 404) {
+                 throw new Error("ALERTA: A função de pagamento não foi instalada no Supabase. É necessário fazer o deploy via terminal.");
+              }
+           } catch (fetchErr) {
+              console.error("Falha ao verificar função manualmente:", fetchErr);
+           }
+           throw new Error("Não foi possível conectar ao servidor de pagamento. Verifique se a Edge Function foi implantada corretamente.");
         }
-        
+
         throw new Error(error.message || "Erro de comunicação com a função de pagamento.");
       }
 
@@ -39,10 +44,8 @@ export const payments = {
         throw new Error(data?.error || "O servidor não retornou o link de pagamento corretamente.");
       }
 
-      // Salva o plano pretendido para monitoramento local
       localStorage.setItem('zapcobranca_pending_plan', plan.toUpperCase());
 
-      // Tenta abrir em nova aba, se falhar (bloqueio de popup), redireciona na mesma
       const checkoutUrl = data.init_point;
       const win = window.open(checkoutUrl, '_blank');
       
