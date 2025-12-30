@@ -3,10 +3,10 @@ import React from 'react';
 
 export const PLANS = {
   STARTER: { 
-    name: 'Starter', 
+    name: 'Starter (Teste)', 
     limit: 5, 
-    price: 'R$ 39,90',
-    description: 'Acesso integral a todas as funções da plataforma.',
+    price: 'R$ 1,00',
+    description: 'Plano de teste para validação de pagamentos.',
     recommended: false
   },
   PRO: { 

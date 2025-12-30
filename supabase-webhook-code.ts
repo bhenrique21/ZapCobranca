@@ -65,7 +65,7 @@ Deno.serve(async (req: Request) => {
       const redirectUrl = origin || 'https://zapcobranca.vercel.app';
 
       const PLANS_CONFIG: any = {
-        'STARTER': { price: 39.90, name: 'Plano Starter - ZapCobrança' },
+        'STARTER': { price: 1.00, name: 'Plano Starter - Teste R$1' },
         'PRO': { price: 59.90, name: 'Plano Pro - ZapCobrança' },
         'ADVANCED': { price: 99.90, name: 'Plano Avançado - ZapCobrança' }
       };
