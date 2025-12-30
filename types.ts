@@ -21,11 +21,10 @@ export interface User {
   messageTemplate: string;
   plan: PlanType;
   subscriptionActive: boolean;
-  subscriptionExpiresAt?: string; // Data de expiração da assinatura paga ou do trial
+  subscriptionExpiresAt?: string;
   createdAt: string; 
-  // Novos campos para automação
-  gatewayUrl?: string; // URL da API (ex: Evolution API / Z-API)
-  gatewayApiKey?: string; // Token da API
+  gatewayUrl?: string;
+  gatewayApiKey?: string;
 }
 
 export interface Client {
@@ -38,7 +37,7 @@ export interface Client {
   status: PaymentStatus;
   lastPaymentDate?: string;
   customMessage?: string;
-  autoSend?: boolean; // Novo campo: Enviar automaticamente?
+  autoSend?: boolean;
   createdAt?: string;
 }
 
@@ -51,4 +50,4 @@ export interface MessageLog {
   status: 'SENT' | 'FAILED';
 }
 
-export type View = 'DASHBOARD' | 'CLIENTS' | 'SETTINGS' | 'BILLING' | 'AUTH';
+export type View = 'LANDING' | 'DASHBOARD' | 'CLIENTS' | 'SETTINGS' | 'BILLING' | 'AUTH';

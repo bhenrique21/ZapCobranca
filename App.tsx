@@ -10,12 +10,13 @@ import Dashboard from './components/Dashboard';
 import Clients from './components/Clients';
 import Settings from './components/Settings';
 import TrialBlocked from './components/TrialBlocked';
+import LandingPage from './components/LandingPage';
 
 const CACHE_KEY_USER = 'zap_cache_user';
 const CACHE_KEY_CLIENTS = 'zap_cache_clients';
 
 const App: React.FC = () => {
-  const [activeView, setActiveView] = useState<View>('AUTH');
+  const [activeView, setActiveView] = useState<View>('LANDING');
   const [shouldOpenAddModal, setShouldOpenAddModal] = useState(false);
   const [user, setUser] = useState<User | null>(() => {
     const cached = localStorage.getItem(CACHE_KEY_USER);
@@ -121,7 +122,8 @@ const App: React.FC = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         await loadUserData(session.user.id, session.user.email, session.user.user_metadata?.full_name);
-        if (viewRef.current === 'AUTH') setActiveView('DASHBOARD');
+        // Se já está logado, pula a landing e vai para dashboard
+        if (viewRef.current === 'AUTH' || viewRef.current === 'LANDING') setActiveView('DASHBOARD');
       } else {
         setIsLoading(false);
       }
@@ -131,14 +133,15 @@ const App: React.FC = () => {
       if (session?.user) {
         if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
           loadUserData(session.user.id, session.user.email, session.user.user_metadata?.full_name);
-          if (viewRef.current === 'AUTH') setActiveView('DASHBOARD');
+          setActiveView('DASHBOARD');
         }
       } else {
         setUser(null);
         setClients([]);
         localStorage.removeItem(CACHE_KEY_USER);
         localStorage.removeItem(CACHE_KEY_CLIENTS);
-        setActiveView('AUTH');
+        // Só redireciona para a landing se não estiver tentando logar
+        if (viewRef.current !== 'AUTH') setActiveView('LANDING');
         setIsLoading(false);
       }
     });
@@ -150,13 +153,12 @@ const App: React.FC = () => {
     localStorage.removeItem(CACHE_KEY_CLIENTS);
     localStorage.removeItem('zapcobranca_pending_plan');
     await supabase.auth.signOut();
+    setActiveView('LANDING');
   };
 
   const handleAddClient = async (newClient: Omit<Client, 'id' | 'userId'>) => {
     if (!user) return;
     const userPlanKey = user.plan.toUpperCase() as keyof typeof PLANS;
-    
-    // Lógica de Limite: Se não pagou (Trial), limite é 2. Se pagou, usa o limite do plano.
     const isTrialMode = !user.subscriptionActive;
     const limit = isTrialMode ? 2 : (PLANS[userPlanKey]?.limit || 0);
 
@@ -266,6 +268,7 @@ const App: React.FC = () => {
   }
 
   const renderView = () => {
+    if (activeView === 'LANDING') return <LandingPage onGetStarted={() => setActiveView('AUTH')} onLogin={() => setActiveView('AUTH')} />;
     if (activeView === 'AUTH') return <Auth onLogin={() => {}} />;
     if (isExpired && activeView !== 'BILLING' && activeView !== 'SETTINGS') {
       return <TrialBlocked isTrial={isTrial} onGoToBilling={() => setActiveView('BILLING')} onLogout={handleLogout} />;

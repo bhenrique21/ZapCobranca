@@ -15,7 +15,8 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ children, activeView, setView, user, onLogout, daysRemaining, isExpired, isTrial }) => {
-  if (activeView === 'AUTH') return <>{children}</>;
+  // Ocultar layout para telas de marketing e auth
+  if (activeView === 'AUTH' || activeView === 'LANDING') return <>{children}</>;
 
   const navItems = [
     { id: 'DASHBOARD' as View, label: 'Dashboard', icon: Icons.Dashboard },
