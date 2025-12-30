@@ -8,8 +8,8 @@ export const payments = {
     if (!session?.user) throw new Error("Usuário não autenticado");
 
     const currentOrigin = window.location.origin;
-    // Esta é a URL exata da sua função que processará o pagamento
-    const functionUrl = `${SUPABASE_URL}/functions/v1/mercado-pago-webhook`;
+    // URL alterada para 'api-checkout' para evitar bloqueio de AdBlock
+    const functionUrl = `${SUPABASE_URL}/functions/v1/api-checkout`;
 
     try {
       console.log(`Iniciando checkout: ${plan}`);
@@ -27,14 +27,17 @@ export const payments = {
           userId: session.user.id,
           email: userEmail,
           origin: currentOrigin,
-          webhookUrl: functionUrl // Importante: informa a função qual URL usar para notificações
+          webhookUrl: functionUrl
         })
       });
 
       if (!response.ok) {
+        if (response.status === 404) {
+             throw new Error("Erro de Configuração: A função 'api-checkout' não foi encontrada. Faça o deploy novamente.");
+        }
         const errorText = await response.text();
         console.error('Erro no servidor:', errorText);
-        throw new Error("Falha ao conectar com o servidor de pagamentos. Verifique se a função foi implantada (deploy).");
+        throw new Error("Falha ao conectar com o servidor de pagamentos.");
       }
 
       const data = await response.json();
@@ -56,7 +59,7 @@ export const payments = {
     } catch (err: any) {
       console.error('Erro Checkout:', err);
       if (err.message.includes('Failed to fetch')) {
-        throw new Error("Erro de Conexão: O servidor recusou a conexão. Verifique se o Deploy foi feito ou se você tem bloqueadores de anúncio ativos.");
+        throw new Error("Erro de Conexão: Bloqueador de Anúncios detectado. Por favor, desative o AdBlock para realizar o pagamento.");
       }
       throw err;
     }

@@ -1,6 +1,7 @@
+
 // Este código deve ser implantado no Supabase como uma Edge Function
-// Nome da função: mercado-pago-webhook
-// Deploy: npx supabase functions deploy mercado-pago-webhook --no-verify-jwt
+// Nome da função: api-checkout
+// COMANDO DE DEPLOY ATUALIZADO: npx supabase functions deploy api-checkout --no-verify-jwt
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -10,8 +11,8 @@ declare const Deno: any;
 const MP_ACCESS_TOKEN = "APP_USR-8375343003401062-122919-43e3e14d0d4be5820a1a751993c2b7e8-493705015";
 
 // Configuração do Supabase (Usado para atualizar o status do usuário após pagamento)
-// O Deno.env pega as variáveis de ambiente configuradas no Supabase Dashboard
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "https://vgvwlmomdwvzoxlflaix.supabase.co";
+// Tenta pegar a chave de serviço de várias formas comuns
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("SUPABASE_SERVICE_KEY");
 
 const corsHeaders = {
@@ -31,14 +32,12 @@ serve(async (req) => {
     // ==================================================================
     // 1. LÓGICA DE WEBHOOK (Recebimento de Notificação do Mercado Pago)
     // ==================================================================
-    // O Mercado Pago envia notificações via query params (topic/id) ou body.
     const topic = url.searchParams.get("topic") || url.searchParams.get("type");
     const id = url.searchParams.get("id") || url.searchParams.get("data.id");
 
     if (id && (topic === 'payment' || topic === 'merchant_order')) {
       console.log(`[Webhook] Recebida notificação de pagamento: ${id}`);
 
-      // Se não tivermos a chave de serviço, não conseguimos atualizar o banco
       if (!SUPABASE_SERVICE_KEY) {
         console.error("ERRO CRÍTICO: SUPABASE_SERVICE_ROLE_KEY não definida nos Secrets.");
         return new Response("Erro de Configuração no Servidor", { status: 500 });
@@ -56,20 +55,17 @@ serve(async (req) => {
 
       const paymentData = await mpResponse.json();
       const status = paymentData.status; // approved, pending, rejected
-      const userId = paymentData.external_reference; // ID do usuário no Supabase
-      const planName = paymentData.metadata?.plan_name || 'PRO'; // Recupera o plano dos metadados
+      const userId = paymentData.external_reference; 
+      const planName = paymentData.metadata?.plan_name || 'PRO'; 
 
       console.log(`[Webhook] Pagamento ${id} - Status: ${status} - User: ${userId}`);
 
       if (status === 'approved' && userId) {
-        // Inicializar Supabase com chave de ADMIN (Service Role) para poder escrever sem logar
         const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
-        // Calcular nova expiração (30 dias a partir de hoje)
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + 30);
 
-        // Atualizar tabela profiles
         const { error: updateError } = await supabaseAdmin
           .from('profiles')
           .update({
@@ -83,7 +79,6 @@ serve(async (req) => {
           console.error("Erro ao atualizar Supabase:", updateError);
           return new Response("Falha ao atualizar banco de dados", { status: 500 });
         }
-
         console.log(`[Webhook] Sucesso! Usuário ${userId} ativado.`);
       }
 
@@ -93,12 +88,10 @@ serve(async (req) => {
     // ==================================================================
     // 2. LÓGICA DO CLIENTE (Criar Link de Pagamento)
     // ==================================================================
-    // Se não for webhook, tentamos ler o corpo JSON enviado pelo app React
     let body;
     try {
       body = await req.json();
     } catch (e) {
-      // Se falhar ao ler JSON e não for webhook, erro.
       return new Response(JSON.stringify({ error: "Body inválido" }), { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400 
@@ -111,7 +104,7 @@ serve(async (req) => {
     if (action === 'test_config') {
       return new Response(JSON.stringify({ 
         mp_status: 'OK', 
-        details: 'Função ativa e pronta para Webhooks.' 
+        details: 'Função "api-checkout" ativa e operacional.' 
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -128,9 +121,8 @@ serve(async (req) => {
       const selectedPlan = PLANS_CONFIG[plan] || PLANS_CONFIG['STARTER'];
       const backUrl = origin || 'https://zapcobranca.vercel.app';
       
-      // Define a URL que o Mercado Pago vai chamar quando pagar
-      // Se webhookUrl vier do front, usa ela. Senão tenta adivinhar.
-      const notificationUrl = webhookUrl || `${SUPABASE_URL}/functions/v1/mercado-pago-webhook`;
+      // Fallback para a nova URL da função
+      const notificationUrl = webhookUrl || `${SUPABASE_URL}/functions/v1/api-checkout`;
 
       console.log(`[Checkout] Criando preferência para ${email} - Notification: ${notificationUrl}`);
 
@@ -143,7 +135,6 @@ serve(async (req) => {
             unit_price: selectedPlan.price
           }
         ],
-        // Metadados são cruciais para sabermos qual plano ativar quando o webhook voltar
         metadata: {
           plan_name: plan,
           user_id: userId
