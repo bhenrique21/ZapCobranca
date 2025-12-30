@@ -162,20 +162,37 @@ export const db = {
   },
 
   async saveClient(client: Client) {
-    // IMPORTANTE: Garantir que números sejam números e strings sejam strings
-    // Isso evita falhas silenciosas no upsert se o dado vier sujo do frontend
+    // Usado PRINCIPALMENTE PARA INSERT (Novos Clientes)
     const payload = {
       id: client.id,
       user_id: client.userId, 
       name: client.name,
       whatsapp: client.whatsapp,
-      monthly_value: Number(client.monthlyValue), // Força numérico
-      due_day: Number(client.dueDay), // Força numérico
+      monthly_value: Number(client.monthlyValue), 
+      due_day: Number(client.dueDay), 
       status: client.status,
       custom_message: client.customMessage || null,
       auto_send: !!client.autoSend
     };
     return await supabase.from('clients').upsert(payload);
+  },
+
+  async updateClient(clientId: string, updates: Partial<Client>) {
+    // Usado PARA ATUALIZAÇÕES PARCIAIS (Editar ou Mudar Status)
+    // Mapeia camelCase para snake_case apenas dos campos que vieram
+    const payload: any = {};
+    if (updates.name !== undefined) payload.name = updates.name;
+    if (updates.whatsapp !== undefined) payload.whatsapp = updates.whatsapp;
+    if (updates.monthlyValue !== undefined) payload.monthly_value = Number(updates.monthlyValue);
+    if (updates.dueDay !== undefined) payload.due_day = Number(updates.dueDay);
+    if (updates.status !== undefined) payload.status = updates.status;
+    if (updates.customMessage !== undefined) payload.custom_message = updates.customMessage;
+    if (updates.autoSend !== undefined) payload.auto_send = !!updates.autoSend;
+
+    // Retorna erro se tentar atualizar sem nada, mas evita chamada ao banco
+    if (Object.keys(payload).length === 0) return { error: null };
+
+    return await supabase.from('clients').update(payload).eq('id', clientId);
   },
 
   async deleteClient(clientId: string) {

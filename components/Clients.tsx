@@ -71,6 +71,8 @@ const Clients: React.FC<ClientsProps> = ({
       };
 
       if (editingClient) {
+        // Envia apenas os dados alterados (neste caso, enviamos o formulário todo processado)
+        // A função updateClient no backend agora lida com PATCH, então isso é seguro.
         await onUpdate(editingClient.id, clientData);
       } else {
         await onAdd({ ...clientData, status: PaymentStatus.PENDING });
@@ -79,7 +81,7 @@ const Clients: React.FC<ClientsProps> = ({
       closeModal();
     } catch (err) {
       console.error("Erro ao salvar cliente:", err);
-      alert("Houve um erro ao salvar o cliente. Tente novamente.");
+      // alert("Houve um erro ao salvar o cliente. Tente novamente."); // Removido para evitar alerts duplos, App.tsx já loga erro
     } finally {
       setIsSaving(false);
     }

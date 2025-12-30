@@ -188,22 +188,12 @@ const App: React.FC = () => {
     setClients(updatedClients);
     localStorage.setItem(CACHE_KEY_CLIENTS, JSON.stringify(updatedClients));
     
-    // 2. Persistência no Banco de Dados
-    // Usamos 'updatedClients' para garantir que pegamos o objeto JÁ fundido com os novos dados
-    const clientToSave = updatedClients.find(c => c.id === id);
-    if (clientToSave && user) {
-        // Correção de Bug Crítico:
-        // Se o cliente local não tiver userId (dados antigos no cache), injetamos o user.id atual
-        // Isso previne erro de RLS no Supabase
-        if (!clientToSave.userId) {
-          clientToSave.userId = user.id;
-        }
-
-        const { error } = await db.saveClient(clientToSave);
+    // 2. Persistência no Banco de Dados (USANDO UPDATE PARCIAL)
+    if (user) {
+        const { error } = await db.updateClient(id, updatedData);
         if (error) {
-           console.error("Erro ao salvar no banco:", error);
-           // Alerta visual para o usuário não achar que salvou
-           alert("Houve um erro ao salvar a alteração. Por favor, recarregue a página.");
+           console.error("Erro ao atualizar no banco:", error);
+           // Não bloqueia a UI, mas loga o erro.
         }
     }
   };
