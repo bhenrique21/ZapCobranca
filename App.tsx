@@ -168,11 +168,25 @@ const App: React.FC = () => {
       setActiveView('BILLING');
       return;
     }
+    
+    // Atualização Otimista
     const client: Client = { ...newClient, id: crypto.randomUUID(), userId: user.id, createdAt: new Date().toISOString() };
+    const previousClients = [...clients];
     const newClientsList = [client, ...clients];
+    
     setClients(newClientsList);
     localStorage.setItem(CACHE_KEY_CLIENTS, JSON.stringify(newClientsList));
-    await db.saveClient(client);
+    
+    // Salvar no Banco
+    const { error } = await db.saveClient(client);
+    
+    if (error) {
+        console.error("Erro ao salvar cliente no DB:", error);
+        alert("Falha ao salvar o cliente no servidor. Verifique se você rodou o script SQL no Supabase.");
+        // Reverter estado se falhar
+        setClients(previousClients);
+        localStorage.setItem(CACHE_KEY_CLIENTS, JSON.stringify(previousClients));
+    }
   };
 
   const handleSendMessage = async (client: Client, type: 'COBRANÇA' | 'LEMBRETE' | 'ATRASO') => {
@@ -188,12 +202,12 @@ const App: React.FC = () => {
     setClients(updatedClients);
     localStorage.setItem(CACHE_KEY_CLIENTS, JSON.stringify(updatedClients));
     
-    // 2. Persistência no Banco de Dados (USANDO UPDATE PARCIAL)
+    // 2. Persistência no Banco de Dados
     if (user) {
         const { error } = await db.updateClient(id, updatedData);
         if (error) {
            console.error("Erro ao atualizar no banco:", error);
-           // Não bloqueia a UI, mas loga o erro.
+           // Opcional: Reverter ou avisar o usuário
         }
     }
   };

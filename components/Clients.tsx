@@ -48,15 +48,27 @@ const Clients: React.FC<ClientsProps> = ({
     );
   }, [clients, searchTerm]);
 
+  // Função auxiliar para formatar moeda no input
+  const handleValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value;
+    // Remove tudo que não é dígito ou vírgula
+    value = value.replace(/[^0-9,]/g, '');
+    setFormData({ ...formData, monthlyValue: value });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
     
     try {
-      const cleanValue = formData.monthlyValue.replace(',', '.');
+      // Correção para suportar formato brasileiro (1.000,00)
+      // 1. Remove pontos de milhar
+      // 2. Substitui vírgula decimal por ponto
+      const cleanValue = formData.monthlyValue.replace(/\./g, '').replace(',', '.');
       const numericValue = parseFloat(cleanValue);
-      if (isNaN(numericValue)) {
-        alert("Por favor, insira um valor mensal válido.");
+      
+      if (isNaN(numericValue) || numericValue <= 0) {
+        alert("Por favor, insira um valor mensal válido (maior que zero).");
         setIsSaving(false);
         return;
       }
@@ -71,8 +83,6 @@ const Clients: React.FC<ClientsProps> = ({
       };
 
       if (editingClient) {
-        // Envia apenas os dados alterados (neste caso, enviamos o formulário todo processado)
-        // A função updateClient no backend agora lida com PATCH, então isso é seguro.
         await onUpdate(editingClient.id, clientData);
       } else {
         await onAdd({ ...clientData, status: PaymentStatus.PENDING });
@@ -81,7 +91,7 @@ const Clients: React.FC<ClientsProps> = ({
       closeModal();
     } catch (err) {
       console.error("Erro ao salvar cliente:", err);
-      // alert("Houve um erro ao salvar o cliente. Tente novamente."); // Removido para evitar alerts duplos, App.tsx já loga erro
+      // App.tsx já lida com o feedback de erro global se o Supabase falhar
     } finally {
       setIsSaving(false);
     }
@@ -105,7 +115,8 @@ const Clients: React.FC<ClientsProps> = ({
     setFormData({
       name: client.name,
       whatsapp: client.whatsapp,
-      monthlyValue: client.monthlyValue.toString().replace('.', ','),
+      // Formata o valor para exibição (Ex: 1200.5 -> 1200,50)
+      monthlyValue: client.monthlyValue.toFixed(2).replace('.', ','),
       dueDay: client.dueDay.toString(),
       customMessage: client.customMessage || currentUser?.messageTemplate || '',
       autoSend: !!client.autoSend
@@ -274,7 +285,14 @@ const Clients: React.FC<ClientsProps> = ({
                   <div className="grid grid-cols-2 gap-3 md:gap-4">
                     <div>
                       <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5 md:mb-2">Valor (R$)</label>
-                      <input type="text" required value={formData.monthlyValue} onChange={(e) => setFormData({...formData, monthlyValue: e.target.value})} className="w-full px-4 md:px-5 py-3 md:py-4 bg-slate-50 border border-slate-200 rounded-xl md:rounded-2xl outline-none font-black text-xs md:text-sm text-indigo-600" />
+                      <input 
+                        type="text" 
+                        required 
+                        value={formData.monthlyValue} 
+                        onChange={handleValueChange}
+                        placeholder="0,00"
+                        className="w-full px-4 md:px-5 py-3 md:py-4 bg-slate-50 border border-slate-200 rounded-xl md:rounded-2xl outline-none font-black text-xs md:text-sm text-indigo-600" 
+                      />
                     </div>
                     <div>
                       <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5 md:mb-2">Vencimento</label>
