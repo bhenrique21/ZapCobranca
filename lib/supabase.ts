@@ -5,7 +5,7 @@ import { DEFAULT_TEMPLATE } from '../constants';
 
 export const SUPABASE_URL = 'https://vgvwlmomdwvzoxlflaix.supabase.co';
 
-// Chave ANON/PUBLIC correta fornecida
+// Chave ANON/PUBLIC correta fornecidaa
 export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZndndsbW9tZHd2em94bGZsYWl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwNDkxMDAsImV4cCI6MjA4MjYyNTEwMH0.o3x5j5zxqPDFzMVLayFtJN6wf6waXpnQO5RdYcnPbDY'; 
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
