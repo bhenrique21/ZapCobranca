@@ -29,7 +29,8 @@ const Clients: React.FC<ClientsProps> = ({
     whatsapp: '',
     monthlyValue: '',
     dueDay: '10',
-    customMessage: ''
+    customMessage: '',
+    autoSend: false
   });
   
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
@@ -67,7 +68,8 @@ const Clients: React.FC<ClientsProps> = ({
         whatsapp: formData.whatsapp.replace(/\D/g, ''),
         monthlyValue: numericValue,
         dueDay: parseInt(formData.dueDay, 10),
-        customMessage: formData.customMessage.trim()
+        customMessage: formData.customMessage.trim(),
+        autoSend: formData.autoSend
       };
 
       if (editingClient) {
@@ -92,7 +94,8 @@ const Clients: React.FC<ClientsProps> = ({
       whatsapp: '', 
       monthlyValue: '', 
       dueDay: '10', 
-      customMessage: currentUser?.messageTemplate || '' 
+      customMessage: currentUser?.messageTemplate || '',
+      autoSend: false
     });
     setIsModalOpen(true);
   };
@@ -104,7 +107,8 @@ const Clients: React.FC<ClientsProps> = ({
       whatsapp: client.whatsapp,
       monthlyValue: client.monthlyValue.toString().replace('.', ','),
       dueDay: client.dueDay.toString(),
-      customMessage: client.customMessage || currentUser?.messageTemplate || ''
+      customMessage: client.customMessage || currentUser?.messageTemplate || '',
+      autoSend: !!client.autoSend
     });
     setIsModalOpen(true);
   };
@@ -195,7 +199,15 @@ const Clients: React.FC<ClientsProps> = ({
               ) : (
                 filteredClients.map((client) => (
                   <tr key={client.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="px-8 py-5 font-black text-slate-900">{client.name}</td>
+                    <td className="px-8 py-5">
+                       <div className="font-black text-slate-900">{client.name}</div>
+                       {client.autoSend && (
+                         <div className="flex items-center gap-1 mt-1 text-[9px] font-bold text-indigo-500 uppercase tracking-wide">
+                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                            Auto
+                         </div>
+                       )}
+                    </td>
                     <td className="px-8 py-5 text-slate-500">{client.whatsapp}</td>
                     <td className="px-8 py-5 font-black text-slate-800">
                       {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(client.monthlyValue)}
@@ -290,6 +302,21 @@ const Clients: React.FC<ClientsProps> = ({
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* Botão Toggle de Automação */}
+              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center justify-between">
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                    <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                    Disparo Automático (API)
+                  </h4>
+                  <p className="text-xs text-slate-400 font-medium">Requer configuração do Gateway na aba Informações.</p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" className="sr-only peer" checked={formData.autoSend} onChange={(e) => setFormData({...formData, autoSend: e.target.checked})} />
+                  <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                </label>
               </div>
 
               <div className="flex gap-4 pt-4">

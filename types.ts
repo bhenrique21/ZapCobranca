@@ -23,6 +23,9 @@ export interface User {
   subscriptionActive: boolean;
   subscriptionExpiresAt?: string; // Data de expiração da assinatura paga ou do trial
   createdAt: string; 
+  // Novos campos para automação
+  gatewayUrl?: string; // URL da API (ex: Evolution API / Z-API)
+  gatewayApiKey?: string; // Token da API
 }
 
 export interface Client {
@@ -35,14 +38,15 @@ export interface Client {
   status: PaymentStatus;
   lastPaymentDate?: string;
   customMessage?: string;
-  createdAt?: string; // Mapeado do created_at do Supabase
+  autoSend?: boolean; // Novo campo: Enviar automaticamente?
+  createdAt?: string;
 }
 
 export interface MessageLog {
   id: string;
   clientId: string;
   clientName: string;
-  type: 'LEMBRETE' | 'COBRANÇA' | 'ATRASO';
+  type: 'LEMBRETE' | 'COBRANÇA' | 'ATRASO' | 'AUTO_LEMBRETE';
   sentAt: string;
   status: 'SENT' | 'FAILED';
 }

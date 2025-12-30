@@ -180,6 +180,52 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdateUser }) => {
           </div>
         </div>
 
+        {/* Card: Integração Automática (NOVO) */}
+        <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-6 md:p-8 rounded-[2rem] shadow-xl space-y-6 relative overflow-hidden text-white">
+          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
+          
+          <div className="flex items-center gap-3 text-emerald-400 mb-2 relative z-10">
+            <div className="p-2 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-white">Automação WhatsApp (API)</h3>
+              <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-500 text-slate-900 px-2 py-0.5 rounded ml-2">Beta</span>
+            </div>
+          </div>
+          
+          <div className="relative z-10 space-y-4">
+            <p className="text-xs text-slate-400 leading-relaxed max-w-2xl">
+              Para que o sistema envie mensagens sozinho (sem você clicar), é necessário conectar um Gateway externo (como <strong>Evolution API</strong>, <strong>Z-API</strong> ou similar). Se deixar em branco, o envio continuará sendo manual via clique.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-300 ml-1">URL da API (Endpoint)</label>
+                <input
+                  type="url"
+                  value={localUser.gatewayUrl || ''}
+                  onChange={(e) => handleInputChange('gatewayUrl', e.target.value)}
+                  className="w-full px-5 py-3.5 bg-slate-800/50 border border-slate-700 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none font-medium placeholder-slate-600 text-white"
+                  placeholder="https://api.exemplo.com/message/send"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-300 ml-1">Chave da API (Token)</label>
+                <input
+                  type="password"
+                  value={localUser.gatewayApiKey || ''}
+                  onChange={(e) => handleInputChange('gatewayApiKey', e.target.value)}
+                  className="w-full px-5 py-3.5 bg-slate-800/50 border border-slate-700 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none font-medium placeholder-slate-600 text-white"
+                  placeholder="Ex: Bearer eyJhbGci..."
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Card: Dados de Recebimento */}
         <div className="bg-white p-6 md:p-8 rounded-[2rem] border border-slate-200 shadow-sm space-y-6">
           <div className="flex items-center gap-3 text-emerald-600 mb-2">

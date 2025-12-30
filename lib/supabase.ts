@@ -120,7 +120,9 @@ export const db = {
       plan: (data.plan?.toUpperCase() as PlanType) || PlanType.STARTER,
       subscriptionActive: !!data.subscription_active,
       subscriptionExpiresAt: data.subscription_expires_at,
-      createdAt: data.created_at || new Date().toISOString()
+      createdAt: data.created_at || new Date().toISOString(),
+      gatewayUrl: data.gateway_url || '',
+      gatewayApiKey: data.gateway_api_key || ''
     };
   },
 
@@ -134,6 +136,10 @@ export const db = {
     if (updates.subscriptionActive !== undefined) dbData.subscription_active = updates.subscriptionActive;
     if (updates.plan !== undefined) dbData.plan = updates.plan;
     if (updates.subscriptionExpiresAt !== undefined) dbData.subscription_expires_at = updates.subscriptionExpiresAt;
+    
+    // Novos campos de automação
+    if (updates.gatewayUrl !== undefined) dbData.gateway_url = updates.gatewayUrl;
+    if (updates.gatewayApiKey !== undefined) dbData.gateway_api_key = updates.gatewayApiKey;
 
     return await supabase.from('profiles').update(dbData).eq('id', userId);
   },
@@ -150,6 +156,7 @@ export const db = {
       dueDay: Number(c.due_day),
       status: c.status as PaymentStatus,
       customMessage: c.custom_message || '',
+      autoSend: !!c.auto_send,
       createdAt: c.created_at
     }));
   },
@@ -163,7 +170,8 @@ export const db = {
       monthly_value: client.monthlyValue,
       due_day: client.dueDay,
       status: client.status,
-      custom_message: client.customMessage
+      custom_message: client.customMessage,
+      auto_send: client.autoSend
     };
     return await supabase.from('clients').upsert(payload);
   },
