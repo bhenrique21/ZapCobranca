@@ -3,23 +3,23 @@ import React from 'react';
 
 export const PLANS = {
   STARTER: { 
-    name: 'Starter (Teste v3)', 
+    name: 'Starter', 
     limit: 5, 
-    price: 'R$ 2,00',
-    description: 'Plano de teste para validação de pagamentos.',
+    price: 'R$ 19,90',
+    description: 'Plano de entrada para começar a organizar.',
     recommended: false
   },
   PRO: { 
     name: 'Pro', 
     limit: 30, 
-    price: 'R$ 59,90',
+    price: 'R$ 39,90',
     description: 'Acesso integral a todas as funções da plataforma.',
     recommended: true
   },
   ADVANCED: { 
     name: 'Avançado', 
     limit: 100, 
-    price: 'R$ 99,90',
+    price: 'R$ 59,90',
     description: 'Acesso integral a todas as funções da plataforma.',
     recommended: false
   },

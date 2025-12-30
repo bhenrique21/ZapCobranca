@@ -155,8 +155,17 @@ const App: React.FC = () => {
   const handleAddClient = async (newClient: Omit<Client, 'id' | 'userId'>) => {
     if (!user) return;
     const userPlanKey = user.plan.toUpperCase() as keyof typeof PLANS;
-    if (clients.length >= (PLANS[userPlanKey]?.limit || 0)) {
-      alert(`Limite do plano ${user.plan} atingido.`);
+    
+    // Lógica de Limite: Se não pagou (Trial), limite é 2. Se pagou, usa o limite do plano.
+    const isTrialMode = !user.subscriptionActive;
+    const limit = isTrialMode ? 2 : (PLANS[userPlanKey]?.limit || 0);
+
+    if (clients.length >= limit) {
+      if (isTrialMode) {
+        alert("Modo Teste: Limite de 2 clientes atingido. Assine um plano para continuar.");
+      } else {
+        alert(`Limite do plano ${user.plan} atingido.`);
+      }
       setActiveView('BILLING');
       return;
     }

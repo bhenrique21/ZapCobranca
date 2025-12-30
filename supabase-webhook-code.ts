@@ -1,3 +1,4 @@
+
 // Este código deve ser implantado no Supabase como uma Edge Function
 // Nome da função: mercado-pago-webhook
 // Deploy: npx supabase functions deploy mercado-pago-webhook --no-verify-jwt
@@ -120,9 +121,9 @@ serve(async (req) => {
     // Criar Preferência
     if (action === 'create_preference') {
       const PLANS_CONFIG: any = {
-        'STARTER': { price: 2.00, name: 'Plano Starter - Teste (R$2)' },
-        'PRO': { price: 59.90, name: 'Plano Pro - Mensal' },
-        'ADVANCED': { price: 99.90, name: 'Plano Avançado - Mensal' }
+        'STARTER': { price: 19.90, name: 'Plano Starter - Mensal' },
+        'PRO': { price: 39.90, name: 'Plano Pro - Mensal' },
+        'ADVANCED': { price: 59.90, name: 'Plano Avançado - Mensal' }
       };
 
       const selectedPlan = PLANS_CONFIG[plan] || PLANS_CONFIG['STARTER'];

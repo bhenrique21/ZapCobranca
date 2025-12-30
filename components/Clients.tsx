@@ -139,7 +139,8 @@ const Clients: React.FC<ClientsProps> = ({
   };
 
   const planKey = userPlan.toUpperCase() as keyof typeof PLANS;
-  const planLimit = PLANS[planKey]?.limit || 5;
+  const isTrial = !currentUser?.subscriptionActive;
+  const planLimit = isTrial ? 2 : (PLANS[planKey]?.limit || 5);
   const isLimitReached = clients.length >= planLimit && !editingClient;
 
   return (
@@ -147,7 +148,10 @@ const Clients: React.FC<ClientsProps> = ({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h2 className="text-3xl font-black text-slate-900 tracking-tight">Meus Clientes</h2>
-          <p className="text-slate-500 font-medium">Você tem {clients.length} de {planLimit} clientes cadastrados.</p>
+          <p className="text-slate-500 font-medium">
+            {isTrial ? "Modo Teste: " : ""}
+            Você tem {clients.length} de {planLimit} clientes cadastrados.
+          </p>
         </div>
         <div className="flex items-center gap-3">
           <input 
