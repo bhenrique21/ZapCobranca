@@ -20,6 +20,11 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, setView, user, on
   const navItems = [
     { id: 'DASHBOARD' as View, label: 'Dashboard', icon: Icons.Dashboard },
     { id: 'CLIENTS' as View, label: 'Clientes', icon: Icons.Users },
+    { id: 'INVOICES' as View, label: 'Notas Fiscais', icon: () => (
+      <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    )},
     { id: 'SETTINGS' as View, label: 'Informações', icon: Icons.Settings },
     { id: 'BILLING' as View, label: 'Meu Plano', icon: Icons.CreditCard },
   ];
@@ -80,9 +85,6 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, setView, user, on
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight mb-1">
                 Plano {user?.plan || 'Starter'}
               </p>
-              <p className={`text-[10px] font-black uppercase ${(!isExpired && user?.subscriptionActive) ? 'text-indigo-500' : 'text-amber-500'}`}>
-                {isExpired ? 'Expirado' : `${daysRemaining} dias restantes`}
-              </p>
             </div>
           </div>
           <button
@@ -101,13 +103,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, setView, user, on
             <span className="w-6 h-6 bg-indigo-600 rounded flex items-center justify-center text-white text-[10px] font-black">Z</span>
             <h1 className="text-lg font-bold text-indigo-600">ZapCobrança</h1>
           </div>
-          <div className="flex items-center gap-3">
-             <div className="text-right">
-                <p className="text-[10px] font-bold text-slate-900 leading-none">{user?.name?.split(' ')[0]}</p>
-                <p className={`text-[9px] font-bold uppercase ${isExpired ? 'text-red-500' : 'text-indigo-500'}`}>{isExpired ? 'Exp' : `${daysRemaining}d`}</p>
-             </div>
-             <button onClick={onLogout} className="p-2 text-slate-400"><Icons.Logout /></button>
-          </div>
+          <button onClick={onLogout} className="p-2 text-slate-400"><Icons.Logout /></button>
         </header>
         
         <div className="p-4 md:p-10 max-w-7xl mx-auto mb-20 md:mb-0">

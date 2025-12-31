@@ -39,6 +39,8 @@ export interface Client {
   customMessage?: string;
   autoSend?: boolean;
   createdAt?: string;
+  notes?: string;
+  reminderDaysBefore?: number;
 }
 
 export interface MessageLog {
@@ -48,6 +50,7 @@ export interface MessageLog {
   type: 'LEMBRETE' | 'COBRANÇA' | 'ATRASO' | 'AUTO_LEMBRETE';
   sentAt: string;
   status: 'SENT' | 'FAILED';
+  details?: string;
 }
 
-export type View = 'LANDING' | 'DASHBOARD' | 'CLIENTS' | 'SETTINGS' | 'BILLING' | 'AUTH';
+export type View = 'LANDING' | 'DASHBOARD' | 'CLIENTS' | 'SETTINGS' | 'BILLING' | 'AUTH' | 'INVOICES';

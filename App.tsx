@@ -11,6 +11,7 @@ import Clients from './components/Clients';
 import Settings from './components/Settings';
 import TrialBlocked from './components/TrialBlocked';
 import LandingPage from './components/LandingPage';
+import Invoices from './components/Invoices';
 
 const CACHE_KEY_USER = 'zap_cache_user';
 const CACHE_KEY_CLIENTS = 'zap_cache_clients';
@@ -28,9 +29,6 @@ const App: React.FC = () => {
   });
   const [logs, setLogs] = useState<MessageLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
-  const [isManualChecking, setIsManualChecking] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
   
   const viewRef = useRef<View>(activeView);
   useEffect(() => {
@@ -55,53 +53,6 @@ const App: React.FC = () => {
 
   const { isExpired, daysRemaining, isTrial } = getPlanStatus();
 
-  const checkPaymentOnce = useCallback(async (userId: string) => {
-    setIsManualChecking(true);
-    const profile = await db.getProfile(userId);
-    if (profile?.subscriptionActive) {
-      setUser(profile);
-      localStorage.setItem(CACHE_KEY_USER, JSON.stringify(profile));
-      localStorage.removeItem('zapcobranca_pending_plan');
-      setIsVerifyingPayment(false);
-      return true;
-    }
-    setIsManualChecking(false);
-    return false;
-  }, []);
-
-  const pollPaymentStatus = useCallback(async (userId: string) => {
-    let attempts = 0;
-    const maxAttempts = 24; 
-    const interval = setInterval(async () => {
-      attempts++;
-      const found = await checkPaymentOnce(userId);
-      if (found || attempts >= maxAttempts) {
-        clearInterval(interval);
-        if (!found) {
-          setIsVerifyingPayment(false);
-          alert("Ainda não detectamos seu pagamento. Se você já pagou, aguarde 1 minuto e recarregue a página.");
-        }
-      }
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [checkPaymentOnce]);
-
-  useEffect(() => {
-    const pending = localStorage.getItem('zapcobranca_pending_plan');
-    if (pending && user && !user.subscriptionActive) {
-      setIsVerifyingPayment(true);
-      pollPaymentStatus(user.id);
-    }
-  }, [user, pollPaymentStatus]);
-
-  // Função auxiliar para verificar se a data é do mês corrente
-  const isDateInCurrentMonth = (dateString?: string) => {
-    if (!dateString) return false;
-    const date = new Date(dateString);
-    const now = new Date();
-    return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
-  };
-
   const loadUserData = useCallback(async (userId: string, userEmail?: string, userName?: string) => {
     if (!userId) { setIsLoading(false); return; }
     try {
@@ -115,25 +66,9 @@ const App: React.FC = () => {
         db.getClients(userId),
         db.getLogs(userId)
       ]);
-
-      // LÓGICA DE VIRADA DE MÊS (Turnover)
-      // Verifica clientes PAGOS. Se a data de pagamento for de um mês anterior, reseta para PENDENTE.
-      const processedClients = clientsData.map(client => {
-         if (client.status === PaymentStatus.PAID) {
-             // Se não tiver data (legado) OU se a data não for deste mês
-             if (!client.lastPaymentDate || !isDateInCurrentMonth(client.lastPaymentDate)) {
-                 // Dispara atualização silenciosa no banco
-                 db.updateClient(client.id, { status: PaymentStatus.PENDING });
-                 // Retorna o objeto já atualizado para a UI
-                 return { ...client, status: PaymentStatus.PENDING };
-             }
-         }
-         return client;
-      });
-
-      setClients(processedClients);
+      setClients(clientsData);
       setLogs(logsData);
-      localStorage.setItem(CACHE_KEY_CLIENTS, JSON.stringify(processedClients));
+      localStorage.setItem(CACHE_KEY_CLIENTS, JSON.stringify(clientsData));
       setIsLoading(false);
     } catch (err) {
       setIsLoading(false);
@@ -172,52 +107,17 @@ const App: React.FC = () => {
   const handleLogout = async () => {
     localStorage.removeItem(CACHE_KEY_USER);
     localStorage.removeItem(CACHE_KEY_CLIENTS);
-    localStorage.removeItem('zapcobranca_pending_plan');
     await supabase.auth.signOut();
     setActiveView('LANDING');
   };
 
   const handleAddClient = async (newClient: Omit<Client, 'id' | 'userId'>) => {
     if (!user) return;
-    const userPlanKey = user.plan.toUpperCase() as keyof typeof PLANS;
-    const isTrialMode = !user.subscriptionActive;
-    const limit = isTrialMode ? 2 : (PLANS[userPlanKey]?.limit || 0);
-
-    if (clients.length >= limit) {
-      if (isTrialMode) {
-        alert("Modo Teste: Limite de 2 clientes atingido. Assine um plano para continuar.");
-      } else {
-        alert(`Limite do plano ${user.plan} atingido.`);
-      }
-      setActiveView('BILLING');
-      return;
-    }
-    
-    // Atualização Otimista
     const client: Client = { ...newClient, id: crypto.randomUUID(), userId: user.id, createdAt: new Date().toISOString() };
-    const previousClients = [...clients];
     const newClientsList = [client, ...clients];
-    
     setClients(newClientsList);
     localStorage.setItem(CACHE_KEY_CLIENTS, JSON.stringify(newClientsList));
-    
-    // Salvar no Banco
-    const { error } = await db.saveClient(client);
-    
-    if (error) {
-        console.error("Erro ao salvar cliente no DB:", error);
-        
-        // Detecção específica de erro de coluna faltando
-        if (error.message && (error.message.includes("column") || error.message.includes("auto_send"))) {
-             alert("BANCO DE DADOS DESATUALIZADO: A tabela 'clients' precisa ser atualizada. Rode o comando 'ALTER TABLE' fornecido no chat no seu Supabase.");
-        } else {
-             alert(`Erro ao salvar: ${error.message || 'Falha de conexão'}. Verifique o console.`);
-        }
-
-        // Reverter estado se falhar
-        setClients(previousClients);
-        localStorage.setItem(CACHE_KEY_CLIENTS, JSON.stringify(previousClients));
-    }
+    await db.saveClient(client);
   };
 
   const handleSendMessage = async (client: Client, type: 'COBRANÇA' | 'LEMBRETE' | 'ATRASO') => {
@@ -228,27 +128,10 @@ const App: React.FC = () => {
   };
 
   const handleUpdateClient = async (id: string, updatedData: Partial<Client>) => {
-    // REGRA DE OURO: Se o status mudou para PAGO, atualizamos a data de pagamento para AGORA.
-    // Isso garante que o Dashboard saiba EXATAMENTE em que mês o dinheiro entrou.
-    if (updatedData.status === PaymentStatus.PAID) {
-        updatedData.lastPaymentDate = new Date().toISOString();
-    }
-
-    // 1. Atualização Otimista da UI e Cache Local
     const updatedClients = clients.map(c => c.id === id ? { ...c, ...updatedData } : c);
     setClients(updatedClients);
     localStorage.setItem(CACHE_KEY_CLIENTS, JSON.stringify(updatedClients));
-    
-    // 2. Persistência no Banco de Dados
-    if (user) {
-        const { error } = await db.updateClient(id, updatedData);
-        if (error) {
-           console.error("Erro ao atualizar no banco:", error);
-           if (error.message && error.message.includes("column")) {
-              alert("Erro de atualização: Banco de dados desatualizado. Rode o script SQL.");
-           }
-        }
-    }
+    await db.updateClient(id, updatedData);
   };
 
   const handleDeleteClient = async (id: string) => {
@@ -270,13 +153,10 @@ const App: React.FC = () => {
 
   const handleSubscribe = async (plan: PlanType) => {
     if (!user) return;
-    setIsProcessing(true);
     try {
       await payments.createCheckoutSession(plan, user.email);
     } catch (err: any) {
       alert(`Erro: ${err.message}`);
-    } finally {
-      setIsProcessing(false);
     }
   };
 
@@ -290,13 +170,14 @@ const App: React.FC = () => {
       case 'DASHBOARD': return <Dashboard clients={clients} logs={logs} onQuickAdd={() => {setShouldOpenAddModal(true); setActiveView('CLIENTS');}} />;
       case 'CLIENTS': return (
         <Clients 
-          clients={clients} onAdd={handleAddClient} onUpdate={handleUpdateClient}
+          clients={clients} logs={logs} onAdd={handleAddClient} onUpdate={handleUpdateClient}
           onUpdateStatus={(id, status) => handleUpdateClient(id, { status })}
           onDelete={handleDeleteClient} onSendMessage={handleSendMessage}
           userPlan={user?.plan || PlanType.STARTER} currentUser={user}
           autoOpenAdd={shouldOpenAddModal} onModalClose={() => setShouldOpenAddModal(false)}
         />
       );
+      case 'INVOICES': return <Invoices />;
       case 'SETTINGS': return user ? <Settings user={user} onUpdateUser={handleUpdateUser} /> : null;
       case 'BILLING': return (
         <div className="space-y-8 max-w-5xl mx-auto py-4 pb-20">
@@ -313,25 +194,10 @@ const App: React.FC = () => {
                   {plan.recommended && <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-indigo-600 text-white text-[10px] font-black uppercase px-5 py-2 rounded-full shadow-lg shadow-indigo-100">Mais Vendido</div>}
                   <h3 className="text-2xl font-black text-slate-800">{plan.name}</h3>
                   <p className="text-4xl font-black text-slate-900 my-6">{plan.price}<span className="text-sm text-slate-400 font-bold">/mês</span></p>
-                  <ul className="space-y-4 mb-10 flex-1">
-                    <li className="flex items-center gap-3 text-sm text-slate-600 font-medium">✓ Até {plan.limit} clientes ativos</li>
-                    <li className="flex items-center gap-3 text-sm text-slate-600 font-medium">✓ Lembretes via WhatsApp</li>
-                    <li className="flex items-center gap-3 text-sm text-slate-600 font-medium">✓ Dashboard Financeiro</li>
-                    <li className="flex items-center gap-3 text-sm text-slate-600 font-medium">✓ Gestão de Cobranças</li>
-                  </ul>
-                  <button 
-                    onClick={() => handleSubscribe(key as PlanType)}
-                    disabled={isProcessing || (isCurrent && user?.subscriptionActive)}
-                    className={`w-full py-5 rounded-2xl font-black transition-all active:scale-95 ${isCurrent && user?.subscriptionActive ? 'bg-indigo-50 text-indigo-700 cursor-default' : 'bg-slate-900 text-white hover:bg-slate-800 shadow-lg'}`}
-                  >
-                    {isProcessing ? 'Abrindo Checkout...' : (isCurrent && user?.subscriptionActive) ? 'Plano Ativo' : 'Assinar Agora'}
-                  </button>
+                  <button onClick={() => handleSubscribe(key as PlanType)} disabled={isCurrent && user?.subscriptionActive} className={`w-full py-5 rounded-2xl font-black transition-all active:scale-95 ${isCurrent && user?.subscriptionActive ? 'bg-indigo-50 text-indigo-700 cursor-default' : 'bg-slate-900 text-white hover:bg-slate-800 shadow-lg'}`}>{(isCurrent && user?.subscriptionActive) ? 'Plano Ativo' : 'Assinar Agora'}</button>
                 </div>
               );
             })}
-          </div>
-          <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 text-center">
-            <p className="text-xs text-slate-400 font-medium italic">O pagamento é processado pelo Mercado Pago. Ativação automática via Webhook em até 2 minutos.</p>
           </div>
         </div>
       );
