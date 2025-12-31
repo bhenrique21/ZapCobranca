@@ -96,28 +96,39 @@ const Clients: React.FC<ClientsProps> = ({
       alert("Preencha nome e valor para que a IA gere a mensagem correta.");
       return;
     }
+
+    if (!process.env.API_KEY) {
+      console.error("API_KEY não encontrada no ambiente.");
+      alert("Erro de configuração: Chave de API não configurada.");
+      return;
+    }
+
     setIsGeneratingIA(true);
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-      const prompt = `Gere uma mensagem de cobrança do estilo ${style} para o cliente ${formData.name}, no valor de R$ ${formData.monthlyValue} com vencimento no dia ${formData.dueDay}. 
+      const promptText = `Gere uma mensagem de cobrança do estilo ${style} para o cliente ${formData.name}, no valor de R$ ${formData.monthlyValue} com vencimento no dia ${formData.dueDay}. 
       Use variáveis {{nome_cliente}}, {{valor}}, {{vencimento}}, {{chave_pix}}. 
       Regras:
       - Estilo AMIGÁVEL: Use emojis, seja acolhedor, trate como lembrete parceiro.
       - Estilo PROFISSIONAL: Linguagem corporativa, direta, polida, sem emojis excessivos.
-      - Estilo DURA: Linguagem séria, formal, enfatizando a importância do pagamento pontual e mencionando a data limite.
-      Apenas o texto da mensagem.`;
+      - Estilo DURA: Linguagem séria, formal, enfatizando a importância do pagamento pontual.
+      Retorne APENAS o texto da mensagem, sem explicações extras.`;
       
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
-        contents: prompt,
+        contents: [{ parts: [{ text: promptText }] }],
       });
       
-      if (response.text) {
-        setFormData(prev => ({ ...prev, customMessage: response.text.trim() }));
+      const generatedText = response.text;
+      if (generatedText) {
+        setFormData(prev => ({ ...prev, customMessage: generatedText.trim() }));
+      } else {
+        throw new Error("Resposta da IA veio vazia.");
       }
-    } catch (err) {
-      console.error("Erro IA:", err);
-      alert("Falha ao gerar mensagem com IA.");
+    } catch (err: any) {
+      console.error("Erro detalhado da IA:", err);
+      // Se for erro de cotação ou chave, o log no console ajudará a diagnosticar
+      alert(`Falha ao gerar mensagem com IA. Verifique sua conexão ou tente novamente.`);
     } finally {
       setIsGeneratingIA(false);
     }
