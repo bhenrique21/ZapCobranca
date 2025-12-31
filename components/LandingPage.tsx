@@ -126,21 +126,21 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
               <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider text-slate-600">Gestão Simples e Eficiente</span>
             </div>
             
-            <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold text-slate-900 leading-[1.1] tracking-tight mb-6 md:mb-8 animate-in fade-in slide-in-from-bottom-6 duration-1000">
+            <h1 className="text-3xl sm:text-4xl md:text-6xl font-extrabold text-slate-900 leading-[1.2] tracking-tight mb-6 md:mb-8 animate-in fade-in slide-in-from-bottom-6 duration-1000">
               Cobranças pelo WhatsApp, <br className="hidden md:block" />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 animate-gradient-x">sem constrangimento e sem esquecer ninguém.</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 animate-gradient-x italic">sem constrangimento e sem esquecer ninguém.</span>
             </h1>
             
-            <p className="text-base md:text-xl text-slate-500 font-medium leading-relaxed max-w-2xl mb-8 md:mb-10 px-4 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-100">
-              Organize seus clientes em um só lugar. Solicite pagamentos de forma prática, rápida e profissional sem complicações.
+            <p className="text-base md:text-lg text-slate-500 font-medium leading-relaxed max-w-3xl mb-8 md:mb-10 px-4 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-100">
+              Automatize lembretes de pagamento, organize seus clientes e tenha controle total das cobranças, tudo em um só lugar.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto px-4 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
               <button 
                 onClick={onGetStarted}
-                className="w-full sm:w-auto px-8 py-4 bg-indigo-600 text-white font-bold rounded-full hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-200 flex items-center justify-center gap-2 text-base active:scale-95"
+                className="w-full sm:w-auto px-10 py-4.5 bg-indigo-600 text-white font-bold rounded-full hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-200 flex items-center justify-center gap-2 text-base md:text-lg active:scale-95"
               >
-                Criar Conta Grátis
+                Começar grátis agora
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
               </button>
             </div>
@@ -450,7 +450,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
                     onClick={onGetStarted}
                     className="w-full sm:w-auto px-8 py-4 md:px-10 md:py-5 bg-white text-slate-900 font-bold rounded-full hover:bg-indigo-50 transition-all hover:scale-105 shadow-xl active:scale-95 text-base md:text-lg"
                   >
-                    Começar Teste Grátis
+                    Começar grátis agora
                   </button>
                 </div>
                 <p className="mt-6 md:mt-8 text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest">Sem compromisso • Sem cartão</p>
