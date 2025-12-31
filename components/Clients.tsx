@@ -91,15 +91,31 @@ const Clients: React.FC<ClientsProps> = ({
     document.body.removeChild(link);
   };
 
+  const generateLocalTemplate = (style: 'AMIGÁVEL' | 'PROFISSIONAL' | 'DURA') => {
+    const { name, monthlyValue, dueDay } = formData;
+    const value = `R$ ${monthlyValue}`;
+    const date = `dia ${dueDay}`;
+
+    const templates = {
+      'AMIGÁVEL': `Olá ${name}! 😊 Passando para te dar um "oi" e lembrar que sua mensalidade de ${value} vence no ${date}. Se precisar de qualquer ajuda ou quiser bater um papo, estou por aqui! Segue nossa chave Pix: {{chave_pix}}. Abraços!`,
+      'PROFISSIONAL': `Prezado(a) ${name}, este é um lembrete profissional referente ao seu plano mensal. O valor de ${value} possui vencimento em ${date}. Solicitamos a gentileza de efetuar o pagamento via Pix: {{chave_pix}} ou através do link: {{link_pagamento}}. Atenciosamente.`,
+      'DURA': `Prezado ${name}, informamos que o pagamento referente ao serviço (valor: ${value}, vencimento: ${date}) ainda não foi identificado em nosso sistema. Pedimos a regularização imediata via Pix: {{chave_pix}} para evitar a suspensão do acesso. Caso já tenha pago, ignore esta mensagem.`
+    };
+    return templates[style];
+  };
+
   const generateIA = async (style: 'AMIGÁVEL' | 'PROFISSIONAL' | 'DURA') => {
     if (!formData.name || !formData.monthlyValue) {
-      alert("Preencha nome e valor para que a IA gere a mensagem correta.");
+      alert("Preencha nome e valor para gerar a mensagem.");
       return;
     }
 
+    // Primeiro, define o fallback local para garantir resposta imediata caso a API demore ou falhe
+    const fallbackText = generateLocalTemplate(style);
+    
+    // Se não houver API KEY, usa o local direto e encerra
     if (!process.env.API_KEY) {
-      console.error("API_KEY não encontrada no ambiente.");
-      alert("Erro de configuração: Chave de API não configurada.");
+      setFormData(prev => ({ ...prev, customMessage: fallbackText }));
       return;
     }
 
@@ -107,12 +123,12 @@ const Clients: React.FC<ClientsProps> = ({
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       const promptText = `Gere uma mensagem de cobrança do estilo ${style} para o cliente ${formData.name}, no valor de R$ ${formData.monthlyValue} com vencimento no dia ${formData.dueDay}. 
-      Use variáveis {{nome_cliente}}, {{valor}}, {{vencimento}}, {{chave_pix}}. 
+      Use obrigatoriamente as variáveis {{nome_cliente}}, {{valor}}, {{vencimento}}, {{chave_pix}}. 
       Regras:
-      - Estilo AMIGÁVEL: Use emojis, seja acolhedor, trate como lembrete parceiro.
-      - Estilo PROFISSIONAL: Linguagem corporativa, direta, polida, sem emojis excessivos.
-      - Estilo DURA: Linguagem séria, formal, enfatizando a importância do pagamento pontual.
-      Retorne APENAS o texto da mensagem, sem explicações extras.`;
+      - Estilo AMIGÁVEL: Use emojis, tom de lembrete parceiro.
+      - Estilo PROFISSIONAL: Linguagem corporativa polida.
+      - Estilo DURA: Linguagem séria e formal sobre regularização.
+      Retorne apenas o texto da mensagem.`;
       
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
@@ -123,12 +139,11 @@ const Clients: React.FC<ClientsProps> = ({
       if (generatedText) {
         setFormData(prev => ({ ...prev, customMessage: generatedText.trim() }));
       } else {
-        throw new Error("Resposta da IA veio vazia.");
+        setFormData(prev => ({ ...prev, customMessage: fallbackText }));
       }
     } catch (err: any) {
-      console.error("Erro detalhado da IA:", err);
-      // Se for erro de cotação ou chave, o log no console ajudará a diagnosticar
-      alert(`Falha ao gerar mensagem com IA. Verifique sua conexão ou tente novamente.`);
+      console.error("IA indisponível, usando motor local:", err);
+      setFormData(prev => ({ ...prev, customMessage: fallbackText }));
     } finally {
       setIsGeneratingIA(false);
     }
