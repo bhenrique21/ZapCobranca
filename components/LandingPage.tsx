@@ -399,10 +399,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
-              { title: "Dados Protegidos", desc: "Seus dados e de seus clientes são criptografados e armazenados com segurança.", icon: "🛡️" },
-              { title: "Controle Total", desc: "Você tem o domínio completo sobre quem cobrar e como as mensagens são enviadas.", icon: "🎮" },
-              { title: "Pagamento Direto", desc: "Nenhum pagamento passa pela plataforma. O dinheiro cai direto na sua conta.", icon: "💸" },
-              { title: "Transparência", desc: "Transparência desde o início, sem taxas ocultas ou intermediários surpresa.", icon: "💎" }
+              { title: "Seus dados são protegidos", desc: "Seus dados e de seus clientes são criptografados e armazenados com segurança.", icon: "🛡️" },
+              { title: "Você tem controle total", desc: "Você tem o domínio completo sobre quem cobrar e como as mensagens são enviadas.", icon: "🎮" },
+              { title: "Nenhum pagamento passa pela plataforma", desc: "Nenhum pagamento passa pela plataforma. O dinheiro cai direto na sua conta.", icon: "💸" },
+              { title: "Transparência desde o início.", desc: "Transparência total desde o início, sem taxas ocultas ou intermediários surpresa.", icon: "💎" }
             ].map((item, i) => (
               <div key={i} className="bg-white/5 backdrop-blur-sm border border-white/10 p-8 rounded-[2.5rem] flex flex-col items-center group hover:bg-white/10 transition-all">
                 <div className="text-4xl mb-6">{item.icon.split(' ')[0]}</div>
@@ -516,16 +516,16 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
       {/* --- CTA FINAL (fechamento forte) --- */}
       <section className="py-24 px-4 bg-white">
         <div className="max-w-5xl mx-auto">
-           <div className="bg-slate-900 rounded-[2rem] md:rounded-[3rem] p-12 md:p-24 text-center relative overflow-hidden">
+           <div className="bg-slate-900 rounded-[2rem] md:rounded-[3rem] p-12 md:p-20 text-center relative overflow-hidden">
               <div className="absolute top-0 left-0 w-64 h-64 bg-indigo-600 rounded-full blur-[100px] opacity-30"></div>
               <div className="absolute bottom-0 right-0 w-64 h-64 bg-purple-600 rounded-full blur-[100px] opacity-30"></div>
               <div className="relative z-10">
-                <span className="text-indigo-400 font-black tracking-widest uppercase text-xs mb-4 block">📣 CTA FINAL</span>
-                <h2 className="text-3xl md:text-5xl font-black text-white mb-6 tracking-tight leading-tight">
+                <span className="text-indigo-400 font-black tracking-widest uppercase text-[10px] mb-4 block">📣 CTA FINAL</span>
+                <h2 className="text-2xl md:text-4xl font-black text-white mb-6 tracking-tight leading-tight max-w-3xl mx-auto">
                   Pare de perder tempo cobrando clientes. <br className="hidden md:block" />
                   Comece a usar o ZapCobranças hoje.
                 </h2>
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10">
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
                   <button 
                     onClick={onGetStarted}
                     className="w-full sm:w-auto px-10 py-5 bg-indigo-600 text-white font-black rounded-full hover:bg-indigo-500 transition-all hover:scale-105 shadow-xl shadow-indigo-500/20 active:scale-95 text-lg flex items-center justify-center gap-2"
@@ -533,7 +533,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
                     👉 Criar conta grátis
                   </button>
                 </div>
-                <p className="mt-8 text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest italic">
+                <p className="mt-8 text-[10px] font-bold text-slate-500 uppercase tracking-widest italic">
                   Junte-se a centenas de profissionais que já simplificaram suas finanças.
                 </p>
               </div>
