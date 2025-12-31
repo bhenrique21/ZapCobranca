@@ -13,7 +13,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
-  // Detectar scroll para mudar estilo do header
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
@@ -32,7 +31,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
     }
   };
 
-  // Dados estáticos para o Preview fiel ao Dashboard real
   const mockChartData = [
     { name: 'Set', pago: 4500 },
     { name: 'Out', pago: 6200 },
@@ -48,11 +46,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
       {/* --- HEADER --- */}
       <header 
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled || isMobileMenuOpen ? 'bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm py-2' : 'bg-transparent py-4'
+          isMobileMenuOpen 
+            ? 'bg-white' // Fundo totalmente sólido quando aberto
+            : (scrolled ? 'bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm py-2' : 'bg-transparent py-4')
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          {/* Logo */}
           <div 
             className="flex items-center gap-2.5 cursor-pointer group z-50 relative" 
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
@@ -61,14 +60,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
             <span className="text-xl font-bold tracking-tight text-slate-900">ZapCobrança</span>
           </div>
 
-          {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-8">
              <button onClick={() => scrollToSection('features')} className="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors">Funcionalidades</button>
+             <button onClick={() => scrollToSection('how-it-works')} className="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors">Como Funciona</button>
              <button onClick={() => scrollToSection('pricing')} className="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors">Preços</button>
-             <button onClick={() => scrollToSection('faq')} className="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors">FAQ</button>
           </div>
 
-          {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-4">
             <button onClick={onLogin} className="text-sm font-bold text-slate-600 hover:text-indigo-600 transition-colors px-4 py-2">Entrar</button>
             <button 
@@ -79,7 +76,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
             </button>
           </div>
 
-          {/* Mobile Menu Button */}
           <button 
             className="md:hidden p-2 text-slate-600 z-50 relative"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -93,13 +89,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
           </button>
         </div>
 
-        {/* Mobile Menu Overlay */}
         {isMobileMenuOpen && (
-          <div className="fixed inset-0 bg-white z-40 flex flex-col pt-24 px-6 animate-in slide-in-from-top-10 duration-200">
+          <div className="fixed inset-0 bg-white z-[40] flex flex-col pt-24 px-6 animate-in slide-in-from-top-10 duration-200">
              <nav className="flex flex-col gap-6 text-center">
                 <button onClick={() => scrollToSection('features')} className="text-lg font-bold text-slate-900 py-2 border-b border-slate-50">Funcionalidades</button>
+                <button onClick={() => scrollToSection('how-it-works')} className="text-lg font-bold text-slate-900 py-2 border-b border-slate-50">Como Funciona</button>
                 <button onClick={() => scrollToSection('pricing')} className="text-lg font-bold text-slate-900 py-2 border-b border-slate-50">Preços</button>
-                <button onClick={() => scrollToSection('faq')} className="text-lg font-bold text-slate-900 py-2 border-b border-slate-50">Perguntas Frequentes</button>
                 <div className="flex flex-col gap-4 mt-8">
                    <button onClick={() => { setIsMobileMenuOpen(false); onLogin(); }} className="w-full py-4 rounded-xl border border-slate-200 font-bold text-slate-700">Fazer Login</button>
                    <button onClick={() => { setIsMobileMenuOpen(false); onGetStarted(); }} className="w-full py-4 rounded-xl bg-indigo-600 font-bold text-white shadow-xl shadow-indigo-200">Começar Grátis</button>
@@ -111,13 +106,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
 
       {/* --- HERO SECTION --- */}
       <section className="pt-32 pb-16 md:pt-48 md:pb-32 px-4 relative overflow-hidden">
-        {/* Background Gradients */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none">
            <div className="absolute top-[-10%] right-[-5%] w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-indigo-50 rounded-full blur-[80px] md:blur-[100px] opacity-60 mix-blend-multiply"></div>
            <div className="absolute bottom-[10%] left-[-10%] w-[300px] md:w-[600px] h-[300px] md:h-[600px] bg-purple-50 rounded-full blur-[80px] md:blur-[120px] opacity-60 mix-blend-multiply"></div>
         </div>
 
-        <div className="max-w-4xl mx-auto flex flex-col items-center text-center relative z-10">
+        <div className="max-w-5xl mx-auto flex flex-col items-center text-center relative z-10">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-white border border-slate-200 rounded-full mb-6 md:mb-8 shadow-sm hover:border-indigo-200 transition-colors cursor-default animate-in fade-in slide-in-from-bottom-4 duration-700">
               <span className="flex h-2 w-2 relative">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -126,7 +120,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
               <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider text-slate-600">Gestão Simples e Eficiente</span>
             </div>
             
-            <h1 className="text-3xl sm:text-4xl md:text-6xl font-extrabold text-slate-900 leading-[1.2] tracking-tight mb-6 md:mb-8 animate-in fade-in slide-in-from-bottom-6 duration-1000">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-900 leading-[1.2] tracking-tight mb-6 md:mb-8 animate-in fade-in slide-in-from-bottom-6 duration-1000">
               Cobranças pelo WhatsApp, <br className="hidden md:block" />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 animate-gradient-x italic">sem constrangimento e sem esquecer ninguém.</span>
             </h1>
@@ -144,18 +138,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
               </button>
             </div>
-
-            <div className="mt-8 md:mt-10 flex flex-wrap justify-center items-center gap-4 md:gap-8 text-xs md:text-sm font-semibold text-slate-400 animate-in fade-in delay-300">
-               <span className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div> Sem cartão de crédito</span>
-               <span className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div> 7 dias grátis</span>
-            </div>
         </div>
 
-        {/* --- DASHBOARD PREVIEW (REAL APP REPLICA) --- */}
+        {/* --- DASHBOARD PREVIEW --- */}
         <div className="mt-16 md:mt-20 max-w-7xl mx-auto relative z-10 animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-300">
            <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-[1.5rem] md:rounded-[2.5rem] blur-xl opacity-20"></div>
            <div className="relative bg-[#F8FAFC] border-[4px] md:border-[10px] border-white rounded-[1.5rem] md:rounded-[2.5rem] shadow-2xl overflow-hidden">
-               {/* Header Fake do Browser */}
                <div className="bg-white px-4 md:px-6 py-3 md:py-4 border-b border-slate-100 flex items-center justify-between">
                   <div className="flex gap-1.5 md:gap-2">
                      <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-red-400"></div>
@@ -168,9 +156,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
                   <div className="h-6 w-6 md:h-8 md:w-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-[10px] md:text-xs font-bold">U</div>
                </div>
                
-               {/* CONTEÚDO FIEL AO DASHBOARD.TSX (Escalado para mobile) */}
                <div className="p-4 md:p-8 space-y-4 md:space-y-6 overflow-x-auto md:overflow-visible">
-                   {/* Header do App */}
                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                       <div>
                         <h2 className="text-xl md:text-3xl font-black text-slate-900 tracking-tighter">Status Financeiro</h2>
@@ -184,96 +170,27 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
                       </div>
                    </div>
 
-                   {/* Grid de Cards Bento */}
                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 min-w-[300px]">
-                      {/* Dark Hero Card */}
                       <div className="bg-slate-900 p-5 md:p-6 rounded-2xl md:rounded-[1.5rem] shadow-xl text-white relative overflow-hidden group">
-                         <div className="absolute top-0 right-0 p-4 opacity-10">
-                            <svg className="w-16 h-16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-                         </div>
                          <div className="relative z-10">
                             <div className="inline-flex items-center gap-2 bg-indigo-500/20 border border-indigo-500/30 px-2 py-1 rounded-full mb-3">
                                <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
                                <span className="text-[8px] font-bold uppercase tracking-widest text-indigo-300">Faturamento</span>
                             </div>
                             <p className="text-2xl md:text-3xl font-black tracking-tight">R$ 12.450</p>
-                            <div className="flex items-center gap-2 mt-2 md:mt-3 text-[9px] font-bold text-slate-400">
-                               <span>+12% vs anterior</span>
-                            </div>
                          </div>
                       </div>
-
-                      {/* Green Card */}
-                      <div className="bg-emerald-500 p-5 md:p-6 rounded-2xl md:rounded-[1.5rem] shadow-xl text-white relative overflow-hidden">
+                      <div className="bg-emerald-500 p-5 md:p-6 rounded-2xl md:rounded-[1.5rem] shadow-xl text-white">
                           <p className="text-[8px] font-black uppercase tracking-[0.2em] opacity-80">Recebido</p>
                           <p className="text-2xl md:text-3xl font-black mt-2 tracking-tight">R$ 8.200</p>
-                          <p className="text-[9px] font-bold mt-2 md:mt-3 opacity-80">5 pagamentos</p>
                       </div>
-
-                      {/* White Card 1 */}
                       <div className="bg-white p-5 md:p-6 rounded-2xl md:rounded-[1.5rem] border border-slate-200 shadow-sm hidden md:block">
                           <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em]">Pendente</p>
                           <p className="text-2xl md:text-3xl font-black text-slate-900 mt-2 tracking-tight">R$ 4.250</p>
-                          <p className="text-[9px] font-black text-amber-500 mt-3 uppercase tracking-tighter">3 transações</p>
                       </div>
-
-                      {/* White Card 2 */}
                       <div className="bg-white p-5 md:p-6 rounded-2xl md:rounded-[1.5rem] border border-slate-200 shadow-sm hidden lg:block">
                           <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em]">Ticket Médio</p>
                           <p className="text-2xl md:text-3xl font-black text-slate-900 mt-2 tracking-tight">R$ 1.556</p>
-                          <p className="text-[9px] font-bold text-slate-400 mt-3 uppercase">Base: 8 clientes</p>
-                      </div>
-                   </div>
-
-                   {/* Charts Area */}
-                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-                      <div className="lg:col-span-2 bg-white p-4 md:p-6 rounded-2xl md:rounded-[2rem] border border-slate-200 shadow-sm h-[250px] md:h-[300px] flex flex-col">
-                          <div className="mb-2 md:mb-4">
-                             <h3 className="text-sm md:text-lg font-black text-slate-800">Receita Realizada</h3>
-                             <p className="text-[9px] md:text-[10px] text-slate-400 font-bold uppercase">Últimos 6 meses</p>
-                          </div>
-                          <div className="flex-1 w-full -ml-2 md:ml-0">
-                            <ResponsiveContainer width="100%" height="100%">
-                              <BarChart data={mockChartData}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700, fill: '#94a3b8' }} dy={10} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700, fill: '#94a3b8' }} width={30} />
-                                <Tooltip 
-                                  cursor={{ fill: '#f8fafc', radius: 10 }}
-                                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 10px rgba(0,0,0,0.1)', fontSize: '12px', fontWeight: 'bold' }}
-                                />
-                                <Bar dataKey="pago" fill="#10b981" radius={[6, 6, 6, 6]} barSize={20} />
-                              </BarChart>
-                            </ResponsiveContainer>
-                          </div>
-                      </div>
-
-                      {/* Mobile hide Detail list to save space or stack it */}
-                      <div className="bg-white p-4 md:p-6 rounded-2xl md:rounded-[2rem] border border-slate-200 shadow-sm flex flex-col h-[250px] md:h-[300px] hidden md:flex">
-                          <div className="mb-4">
-                             <h3 className="text-lg font-black text-slate-800">Pagamentos</h3>
-                             <p className="text-[10px] text-slate-400 font-bold uppercase">Recentes</p>
-                          </div>
-                          <div className="space-y-3 overflow-hidden relative">
-                             {/* Pendentes */}
-                             <div className="flex justify-between items-center p-2 rounded-lg bg-slate-50">
-                                <span className="font-bold text-slate-700 text-xs">Consultoria Tech</span>
-                                <span className="font-black text-amber-600 text-xs">R$ 2.500</span>
-                             </div>
-                             <div className="flex justify-between items-center p-2 rounded-lg bg-slate-50">
-                                <span className="font-bold text-slate-700 text-xs">Design Studio</span>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-[8px] font-black text-red-500">ATRASADO</span>
-                                  <span className="font-black text-amber-600 text-xs">R$ 1.200</span>
-                                </div>
-                             </div>
-                             <div className="w-full h-px bg-slate-100 my-2"></div>
-                             {/* Pagos */}
-                             <div className="flex justify-between items-center p-2 opacity-60">
-                                <span className="font-bold text-slate-700 text-xs">Agência MKT</span>
-                                <span className="font-black text-emerald-600 text-xs">R$ 3.000</span>
-                             </div>
-                          </div>
                       </div>
                    </div>
                </div>
@@ -281,76 +198,216 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
         </div>
       </section>
 
-      {/* --- FEATURES SECTION --- */}
-      <section id="features" className="py-16 md:py-24 bg-slate-50">
+      {/* --- PAIN POINTS SECTION --- */}
+      <section className="py-20 bg-slate-50 border-y border-slate-100">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-12 md:mb-16">
-            <span className="text-indigo-600 font-bold tracking-wider uppercase text-xs mb-2 block">Por que escolher o ZapCobrança?</span>
-            <h2 className="text-3xl md:text-5xl font-black text-slate-900 leading-tight">Gerencie menos,<br/> receba mais.</h2>
+          <div className="text-center mb-16">
+            <h2 className="text-2xl md:text-4xl font-black text-slate-900 mb-6">
+              Você ainda perde tempo cobrando clientes manualmente?
+            </h2>
+            <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Cobrar não deveria ser um problema — deveria ser automático.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-            {/* Feature 1 */}
-            <div className="bg-white p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-sm hover:shadow-xl transition-all hover:-translate-y-1 border border-slate-100 group">
-              <div className="w-14 h-14 md:w-16 md:h-16 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 mb-6 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-                 <svg className="w-7 h-7 md:w-8 md:h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              { title: "Esquece de cobrar", desc: "Perde o dia certo e acaba recebendo com atraso por falta de lembrete.", icon: "🗓️" },
+              { title: "Mensagem constrangedora", desc: "A sensação de 'pedir' o seu próprio dinheiro todo mês é horrível.", icon: "😰" },
+              { title: "Falta de controle", desc: "Não saber quem já pagou ou quem está devendo sem olhar o extrato.", icon: "📊" },
+              { title: "Conversas perdidas", desc: "Planilhas, blocos de notas e chats misturados que dificultam a gestão.", icon: "🌪️" }
+            ].map((item, i) => (
+              <div key={i} className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                <div className="text-3xl mb-4">{item.icon}</div>
+                <h3 className="text-lg font-bold text-slate-900 mb-2">{item.title}</h3>
+                <p className="text-sm text-slate-500 leading-relaxed font-medium">{item.desc}</p>
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3 md:mb-4">Economia de Tempo</h3>
-              <p className="text-sm md:text-base text-slate-500 leading-relaxed">
-                Deixe de perder horas copiando e colando mensagens. Com um clique, você envia lembretes profissionais.
-              </p>
-            </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-            {/* Feature 2 */}
-            <div className="bg-white p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-sm hover:shadow-xl transition-all hover:-translate-y-1 border border-slate-100 group">
-              <div className="w-14 h-14 md:w-16 md:h-16 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 mb-6 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-                 <svg className="w-7 h-7 md:w-8 md:h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+      {/* --- THE SOLUTION SECTION --- */}
+      <section id="features" className="py-24 bg-white relative">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex flex-col lg:flex-row items-center gap-16">
+            <div className="lg:w-1/2">
+              <span className="text-indigo-600 font-bold tracking-wider uppercase text-xs mb-4 block">🚀 A SOLUÇÃO</span>
+              <h2 className="text-3xl md:text-5xl font-black text-slate-900 leading-tight mb-8">
+                O ZapCobranças faz a cobrança por você
+              </h2>
+              <div className="space-y-6">
+                {[
+                  "Envie cobranças automáticas pelo WhatsApp",
+                  "Personalize mensagens com nome, valor e vencimento",
+                  "Organize todos os seus clientes em um só painel",
+                  "Saiba exatamente quem pagou e quem está em atraso"
+                ].map((text, i) => (
+                  <div key={i} className="flex items-start gap-4">
+                    <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 mt-1">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                    </div>
+                    <p className="text-lg font-bold text-slate-700">{text}</p>
+                  </div>
+                ))}
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3 md:mb-4">Organização Total</h3>
-              <p className="text-sm md:text-base text-slate-500 leading-relaxed">
-                Saiba exatamente quem pagou, quem deve e quanto dinheiro vai entrar. Adeus planilhas confusas.
-              </p>
+              <p className="mt-10 text-slate-500 font-medium">Tudo simples, rápido e sem complicação.</p>
             </div>
-
-            {/* Feature 3 */}
-            <div className="bg-white p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-sm hover:shadow-xl transition-all hover:-translate-y-1 border border-slate-100 group">
-              <div className="w-14 h-14 md:w-16 md:h-16 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600 mb-6 group-hover:bg-amber-600 group-hover:text-white transition-colors">
-                 <svg className="w-7 h-7 md:w-8 md:h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3 md:mb-4">Taxa Zero no Pix</h3>
-              <p className="text-sm md:text-base text-slate-500 leading-relaxed">
-                O dinheiro vai direto para sua conta. Não intermediamos pagamentos, apenas organizamos sua vida.
-              </p>
+            <div className="lg:w-1/2 relative">
+               <div className="bg-indigo-600 rounded-[3rem] p-8 md:p-12 text-white shadow-2xl relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-12 opacity-10">
+                    <svg className="w-48 h-48" fill="currentColor" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+                  </div>
+                  <h4 className="text-2xl font-black mb-6 relative z-10">Mensagem de Exemplo</h4>
+                  <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 relative z-10">
+                    <p className="text-sm md:text-base italic leading-relaxed">
+                      "Olá <span className="text-indigo-200 font-black">João</span>, este é um lembrete amigável sobre sua mensalidade de <span className="text-indigo-200 font-black">R$ 150,00</span> com vencimento em <span className="text-indigo-200 font-black">dia 10</span>. Você pode realizar o pagamento via Pix: <span className="text-indigo-200 font-black">financeiro@suaempresa.com</span>"
+                    </p>
+                  </div>
+               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* --- PRICING SECTION --- */}
-      <section id="pricing" className="py-16 md:py-24 px-4 bg-white relative overflow-hidden">
-        {/* Decorative Blob */}
-        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-50 rounded-full blur-[120px] opacity-50 pointer-events-none"></div>
+      {/* --- HOW IT WORKS (3 STEPS) --- */}
+      <section id="how-it-works" className="py-24 bg-slate-900 text-white overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-20">
+            <span className="text-indigo-400 font-bold tracking-wider uppercase text-xs mb-4 block">⚙️ COMO FUNCIONA</span>
+            <h2 className="text-3xl md:text-5xl font-black">Em apenas 3 passos</h2>
+          </div>
 
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="text-center mb-12 md:mb-16">
-            <span className="text-indigo-600 font-bold tracking-wider uppercase text-xs mb-2 block">Investimento Inteligente</span>
-            <h2 className="text-3xl md:text-5xl font-black text-slate-900 mb-4 md:mb-6">Planos que cabem no bolso.</h2>
-            <p className="text-base md:text-lg text-slate-500 max-w-2xl mx-auto">
-              Comece grátis. Cancele quando quiser. Sem letras miúdas.
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
+            <div className="absolute top-1/2 left-0 w-full h-px bg-white/10 hidden md:block -translate-y-1/2"></div>
+            
+            {[
+              { step: "01", title: "Cadastre seus clientes", desc: "Informe nome, WhatsApp, valor e vencimento.", icon: "👥" },
+              { step: "02", title: "Configure a mensagem", desc: "Escolha um modelo ou personalize do seu jeito.", icon: "💬" },
+              { step: "03", title: "Envie ou automatize", desc: "O ZapCobranças lembra e envia no momento certo.", icon: "🚀" }
+            ].map((item, i) => (
+              <div key={i} className="relative z-10 text-center flex flex-col items-center">
+                <div className="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center text-4xl mb-8 shadow-xl shadow-indigo-500/20">
+                  {item.icon}
+                </div>
+                <div className="text-indigo-400 font-black text-xs mb-2 tracking-widest">{item.step}</div>
+                <h3 className="text-xl font-bold mb-4">{item.title}</h3>
+                <p className="text-slate-400 text-sm leading-relaxed max-w-[240px]">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+          
+          <div className="mt-20 text-center">
+            <p className="text-indigo-300 font-bold">👉 Você economiza tempo e evita atrasos.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* --- MAIN FEATURES GRID --- */}
+      <section className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-black text-slate-900">📊 FUNCIONALIDADES PRINCIPAIS</h2>
+          </div>
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              { label: "Cadastro de clientes", icon: "📋" },
+              { label: "Agenda de cobranças", icon: "🗓️" },
+              { label: "Envio via WhatsApp", icon: "💬" },
+              { label: "Cobranças recorrentes", icon: "🔁" },
+              { label: "Dashboard de controle", icon: "📈" },
+              { label: "Histórico de cobranças", icon: "🧾" },
+              { label: "Link de pagamento próprio", icon: "🔗" },
+              { label: "Taxa Zero no PIX", icon: "⚡" }
+            ].map((feat, i) => (
+              <div key={i} className="bg-slate-50 p-6 rounded-3xl border border-slate-100 flex flex-col items-center text-center group hover:bg-white hover:border-indigo-200 transition-all">
+                <span className="text-3xl mb-4 group-hover:scale-110 transition-transform">{feat.icon}</span>
+                <span className="text-sm font-bold text-slate-800">{feat.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* --- TARGET AUDIENCE (PARA QUEM É) --- */}
+      <section className="py-24 bg-indigo-50/50">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-black text-slate-900 mb-6">🧲 PARA QUEM É</h2>
+            <p className="text-slate-500 font-medium">Ideal para quem cobra mensalidades ou serviços.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              { title: "Prestadores de Serviço", list: ["Agências de Marketing", "Web Designers", "Freelancers", "Consultores"] },
+              { title: "Pequenas Empresas", list: ["Escolas de Cursos", "Personal Trainers", "Contabilidades", "Pet Shops"] },
+              { title: "Autônomos e MEI", list: ["Fotógrafos", "Psicólogos", "Professores Particulares", "Terapias"] }
+            ].map((card, i) => (
+              <div key={i} className="bg-white p-10 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                <h3 className="text-xl font-black text-indigo-600 mb-6">{card.title}</h3>
+                <ul className="space-y-4">
+                  {card.list.map((item, j) => (
+                    <li key={j} className="flex items-center gap-3 text-sm font-bold text-slate-600">
+                      <div className="w-1.5 h-1.5 rounded-full bg-indigo-400"></div>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+          <div className="mt-16 text-center">
+            <p className="text-lg text-slate-700 font-bold">Se você precisa cobrar clientes todo mês, o ZapCobranças é para você.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* --- DIFFERENTIATOR SECTION --- */}
+      <section className="py-24 bg-white">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <span className="text-indigo-600 font-bold tracking-wider uppercase text-xs mb-4 block">🧠 DIFERENCIAL</span>
+          <h2 className="text-3xl md:text-5xl font-black text-slate-900 mb-12">Por que usar o ZapCobranças?</h2>
+          
+          <div className="grid md:grid-cols-2 gap-8 text-left">
+            {[
+              { title: "Não é intermediador", desc: "Você recebe o dinheiro direto na sua conta bancária via PIX ou Link que já usa.", icon: "🏦" },
+              { title: "Taxa Zero", desc: "Não cobramos porcentagem sobre seus recebimentos. Sua mensalidade é fixa.", icon: "🏷️" },
+              { title: "Seu jeito, suas regras", desc: "Funciona com o pagamento que você já usa (Nubank, MP, Stripe, Inter).", icon: "🛠️" },
+              { title: "Foco em Simplicidade", desc: "Interface intuitiva pensada para quem não quer perder tempo com sistemas complexos.", icon: "✨" }
+            ].map((diff, i) => (
+              <div key={i} className="flex gap-4 p-6 rounded-3xl bg-slate-50 border border-slate-100">
+                <span className="text-3xl">{diff.icon}</span>
+                <div>
+                   <h4 className="font-bold text-slate-900 mb-1">{diff.title}</h4>
+                   <p className="text-sm text-slate-500 font-medium leading-relaxed">{diff.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="mt-12 text-slate-400 font-bold italic">Você cobra do seu jeito. O ZapCobranças só facilita.</p>
+        </div>
+      </section>
+
+      {/* --- PRICING SECTION --- */}
+      <section id="pricing" className="py-24 px-4 bg-slate-50">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-black text-slate-900 mb-6">Investimento Simples</h2>
+            <p className="text-base md:text-lg text-slate-500 max-w-2xl mx-auto font-medium">
+              Escolha o plano ideal para o tamanho da sua base de clientes.
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto items-stretch">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto items-stretch">
             {(Object.keys(PLANS) as Array<keyof typeof PLANS>).map((key) => {
               const plan = PLANS[key];
               const isRecommended = plan.recommended;
               return (
                 <div 
                   key={key} 
-                  className={`relative p-8 md:p-10 rounded-[2rem] md:rounded-[2.5rem] transition-all duration-300 flex flex-col h-full
+                  className={`relative p-8 md:p-10 rounded-[2.5rem] transition-all duration-300 flex flex-col h-full
                     ${isRecommended 
-                      ? 'bg-slate-900 text-white shadow-2xl scale-100 md:scale-105 z-10 ring-8 ring-slate-900/10' 
-                      : 'bg-white text-slate-900 border border-slate-200 hover:border-slate-300 shadow-sm hover:shadow-lg'
+                      ? 'bg-slate-900 text-white shadow-2xl scale-100 md:scale-105 z-10' 
+                      : 'bg-white text-slate-900 border border-slate-200 hover:border-slate-300 shadow-sm'
                     }
                   `}
                 >
@@ -359,36 +416,17 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
                        Popular
                     </div>
                   )}
-                  
-                  <div className="mb-6 md:mb-8">
-                     <h3 className={`text-xl font-bold mb-2 ${isRecommended ? 'text-indigo-300' : 'text-slate-500'}`}>{plan.name}</h3>
-                     <div className="flex items-baseline gap-1">
-                        <span className="text-3xl md:text-4xl font-black">{plan.price}</span>
-                        <span className={`text-xs md:text-sm font-bold ${isRecommended ? 'text-slate-400' : 'text-slate-400'}`}>/mês</span>
-                     </div>
-                     <p className={`mt-4 text-xs md:text-sm font-medium ${isRecommended ? 'text-slate-400' : 'text-slate-500'}`}>
-                        {plan.description}
-                     </p>
+                  <h3 className={`text-xl font-bold mb-2 ${isRecommended ? 'text-indigo-300' : 'text-slate-500'}`}>{plan.name}</h3>
+                  <div className="flex items-baseline gap-1 mb-8">
+                    <span className="text-4xl font-black">{plan.price}</span>
+                    <span className="text-xs font-bold opacity-60">/mês</span>
                   </div>
-
-                  <ul className="space-y-3 md:space-y-4 mb-8 md:mb-10 flex-1">
-                    <li className="flex items-center gap-3 text-sm font-bold">
-                      <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${isRecommended ? 'bg-indigo-500/20 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>✓</div>
-                      Até {plan.limit} Clientes
-                    </li>
-                    <li className="flex items-center gap-3 text-sm font-bold">
-                      <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${isRecommended ? 'bg-indigo-500/20 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>✓</div>
-                      Envio via WhatsApp
-                    </li>
-                    <li className="flex items-center gap-3 text-sm font-bold">
-                      <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${isRecommended ? 'bg-indigo-500/20 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>✓</div>
-                      Dashboard Completo
-                    </li>
-                    <li className="flex items-center gap-3 text-sm font-bold">
-                      <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${isRecommended ? 'bg-indigo-500/20 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>✓</div>
-                      Suporte Prioritário
-                    </li>
+                  <ul className="space-y-4 mb-10 flex-1">
+                    <li className="flex items-center gap-3 text-sm font-bold">✓ Até {plan.limit} Clientes</li>
+                    <li className="flex items-center gap-3 text-sm font-bold">✓ WhatsApp Ilimitado</li>
+                    <li className="flex items-center gap-3 text-sm font-bold">✓ Suporte Premium</li>
                   </ul>
+                  <button onClick={onGetStarted} className={`w-full py-4 rounded-2xl font-black text-sm transition-all ${isRecommended ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-xl' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}>Assinar {plan.name}</button>
                 </div>
               );
             })}
@@ -396,33 +434,49 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
         </div>
       </section>
 
-      {/* --- FAQ SECTION --- */}
-      <section id="faq" className="py-16 md:py-24 bg-slate-50 px-4">
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-12 md:mb-16">
-            <h2 className="text-3xl md:text-4xl font-black text-slate-900 mb-4">Dúvidas Comuns</h2>
-            <p className="text-slate-500">Tudo o que você precisa saber antes de começar.</p>
-          </div>
+      {/* --- ROADMAP (EM BREVE) --- */}
+      <section className="py-24 bg-white border-t border-slate-100">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <span className="text-indigo-600 font-bold tracking-wider uppercase text-xs mb-4 block">🧾 EM BREVE</span>
+          <h2 className="text-2xl md:text-4xl font-black text-slate-900 mb-12">Recursos em desenvolvimento</h2>
           
-          <div className="space-y-3 md:space-y-4">
+          <div className="flex flex-wrap justify-center gap-4">
+            {["Emissão de nota fiscal", "Relatórios avançados", "Automação inteligente", "Split de pagamentos"].map((item, i) => (
+              <div key={i} className="px-6 py-3 bg-slate-50 border border-slate-100 rounded-full text-sm font-bold text-slate-500 flex items-center gap-2">
+                 <div className="w-1.5 h-1.5 rounded-full bg-slate-300"></div>
+                 {item}
+              </div>
+            ))}
+          </div>
+          <p className="mt-12 text-indigo-600 font-black tracking-tight">👉 Um sistema que cresce junto com você.</p>
+        </div>
+      </section>
+
+      {/* --- FAQ SECTION --- */}
+      <section id="faq" className="py-24 bg-slate-50 px-4">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-black text-slate-900 mb-4">Dúvidas Comuns</h2>
+          </div>
+          <div className="space-y-4">
             {[
-              { q: "Preciso baixar algum aplicativo?", a: "Não! O ZapCobrança é 100% online (Web App). Você acessa pelo navegador do seu celular, tablet ou computador, sem ocupar memória." },
-              { q: "Posso usar minha própria chave Pix?", a: "Com certeza. O dinheiro vai direto para a sua conta bancária. Nós não tocamos no seu dinheiro e não cobramos taxas sobre transações." },
-              { q: "O WhatsApp pode bloquear meu número?", a: "Utilizamos as melhores práticas e APIs oficiais para garantir segurança. Porém, recomendamos sempre usar boas práticas de envio e evitar spam." },
-              { q: "Tem fidelidade?", a: "Nenhuma. Você assina mensalmente e pode cancelar a qualquer momento sem multas ou taxas surpresas." }
+              { q: "Preciso baixar algum aplicativo?", a: "Não! O ZapCobrança é 100% online (Web App). Você acessa pelo navegador do seu celular ou computador." },
+              { q: "Posso usar minha própria chave Pix?", a: "Com certeza. O dinheiro vai direto para a sua conta bancária. Nós não intermediamos pagamentos." },
+              { q: "O WhatsApp pode bloquear meu número?", a: "Utilizamos as melhores práticas e APIs oficiais para garantir segurança." },
+              { q: "Tem fidelidade?", a: "Nenhuma. Você assina mensalmente e pode cancelar a qualquer momento sem multas." }
             ].map((item, i) => (
-              <div key={i} className="bg-white border border-slate-200 rounded-[1.5rem] md:rounded-[20px] overflow-hidden transition-all hover:border-indigo-200">
+              <div key={i} className="bg-white border border-slate-200 rounded-[1.5rem] overflow-hidden">
                 <button 
                   onClick={() => toggleFaq(i)}
-                  className="w-full flex items-center justify-between p-5 md:p-6 text-left font-bold text-slate-800 text-sm md:text-lg"
+                  className="w-full flex items-center justify-between p-6 text-left font-bold text-slate-800 text-sm md:text-base"
                 >
                   <span className="pr-4">{item.q}</span>
-                  <div className={`w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center shrink-0 transition-transform duration-300 ${openFaq === i ? 'rotate-180 bg-indigo-100 text-indigo-600' : 'text-slate-400'}`}>
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                  <div className={`w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center shrink-0 transition-transform ${openFaq === i ? 'rotate-180' : ''}`}>
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" /></svg>
                   </div>
                 </button>
                 {openFaq === i && (
-                  <div className="px-5 pb-5 md:px-6 md:pb-6 text-slate-500 leading-relaxed font-medium text-sm md:text-base animate-in slide-in-from-top-1">
+                  <div className="px-6 pb-6 text-slate-500 text-sm font-medium animate-in slide-in-from-top-1">
                     {item.a}
                   </div>
                 )}
@@ -433,45 +487,35 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
       </section>
 
       {/* --- CTA FINAL --- */}
-      <section className="py-16 md:py-24 px-4 bg-white">
+      <section className="py-24 px-4 bg-white">
         <div className="max-w-5xl mx-auto">
-           <div className="bg-slate-900 rounded-[2rem] md:rounded-[3rem] p-8 md:p-24 text-center relative overflow-hidden">
-              {/* Abstract shapes */}
+           <div className="bg-slate-900 rounded-[2rem] md:rounded-[3rem] p-12 md:p-24 text-center relative overflow-hidden">
               <div className="absolute top-0 left-0 w-64 h-64 bg-indigo-600 rounded-full blur-[100px] opacity-30"></div>
               <div className="absolute bottom-0 right-0 w-64 h-64 bg-purple-600 rounded-full blur-[100px] opacity-30"></div>
-              
               <div className="relative z-10">
-                <h2 className="text-2xl md:text-5xl font-black text-white mb-4 md:mb-6 tracking-tight">Pronto para organizar sua empresa?</h2>
-                <p className="text-slate-400 text-base md:text-xl max-w-2xl mx-auto mb-8 md:mb-10">
-                  Junte-se a centenas de profissionais que já simplificaram suas finanças com o ZapCobrança.
-                </p>
+                <h2 className="text-3xl md:text-5xl font-black text-white mb-6 tracking-tight">Pronto para organizar sua empresa?</h2>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                   <button 
                     onClick={onGetStarted}
-                    className="w-full sm:w-auto px-8 py-4 md:px-10 md:py-5 bg-white text-slate-900 font-bold rounded-full hover:bg-indigo-50 transition-all hover:scale-105 shadow-xl active:scale-95 text-base md:text-lg"
+                    className="w-full sm:w-auto px-10 py-5 bg-white text-slate-900 font-bold rounded-full hover:bg-indigo-50 transition-all hover:scale-105 shadow-xl active:scale-95 text-lg"
                   >
                     Começar grátis agora
                   </button>
                 </div>
-                <p className="mt-6 md:mt-8 text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest">Sem compromisso • Sem cartão</p>
+                <p className="mt-8 text-xs font-bold text-slate-500 uppercase tracking-widest italic">Junte-se a centenas de profissionais que já simplificaram suas finanças.</p>
               </div>
            </div>
         </div>
       </section>
 
-      {/* --- FOOTER --- */}
-      <footer className="py-8 md:py-12 bg-white border-t border-slate-100">
+      <footer className="py-12 bg-white border-t border-slate-100">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2">
              <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-xs">Z</div>
              <span className="font-bold text-slate-900">ZapCobrança</span>
           </div>
-          <div className="text-slate-400 text-xs md:text-sm font-medium text-center md:text-left">
+          <div className="text-slate-400 text-xs font-medium">
              © 2025 ZapCobrança. Todos os direitos reservados.
-          </div>
-          <div className="flex gap-6">
-             <a href="#" className="text-slate-400 hover:text-indigo-600 transition-colors"><svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg></a>
-             <a href="#" className="text-slate-400 hover:text-indigo-600 transition-colors"><svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></a>
           </div>
         </div>
       </footer>
