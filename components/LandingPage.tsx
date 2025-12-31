@@ -127,8 +127,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin }) => {
             </div>
             
             <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold text-slate-900 leading-[1.1] tracking-tight mb-6 md:mb-8 animate-in fade-in slide-in-from-bottom-6 duration-1000">
-              Organize suas cobranças e <br className="hidden md:block" />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 animate-gradient-x">receba em dia.</span>
+              Cobranças pelo WhatsApp, <br className="hidden md:block" />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 animate-gradient-x">sem constrangimento e sem esquecer ninguém.</span>
             </h1>
             
             <p className="text-base md:text-xl text-slate-500 font-medium leading-relaxed max-w-2xl mb-8 md:mb-10 px-4 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-100">
